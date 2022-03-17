@@ -35,7 +35,7 @@ func TestSelectVersionTriageInfo(t *testing.T) {
 	database.Connect(generateConfig())
 
 	query := &dto.VersionTriageInfoQuery{
-		VersionName: "5.4.0",
+		Version: "5.4.1",
 	}
 
 	info, err := SelectVersionTriageInfo(query)

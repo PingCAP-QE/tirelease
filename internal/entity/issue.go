@@ -40,15 +40,15 @@ type Issue struct {
 
 // List Option
 type IssueOption struct {
-	ID      int64  `json:"id"`
-	IssueID string `json:"issue_id,omitempty"`
-	Number  int    `json:"number,omitempty"`
-	State   string `json:"state,omitempty"`
-	Owner   string `json:"owner,omitempty"`
-	Repo    string `json:"repo,omitempty"`
+	ID      int64  `json:"id" form:"id"`
+	IssueID string `json:"issue_id,omitempty" form:"issue_id"`
+	Number  int    `json:"number,omitempty" form:"number"`
+	State   string `json:"state,omitempty" form:"state"`
+	Owner   string `json:"owner,omitempty" form:"owner"`
+	Repo    string `json:"repo,omitempty" form:"repo"`
 
-	SeverityLabel string `json:"severity_label,omitempty"`
-	TypeLabel     string `json:"type_label,omitempty"`
+	SeverityLabel string `json:"severity_label,omitempty" form:"severity_label"`
+	TypeLabel     string `json:"type_label,omitempty" form:"type_label"`
 }
 
 // DB-Table
@@ -61,7 +61,8 @@ func ComposeIssueFromV3(issue *github.Issue) *Issue {
 	severityLabel := ""
 	typeLabel := ""
 	labels := &[]github.Label{}
-	for _, node := range issue.Labels {
+	for i := range issue.Labels {
+		node := issue.Labels[i]
 		label := &github.Label{
 			Name:  node.Name,
 			Color: node.Color,
@@ -76,7 +77,8 @@ func ComposeIssueFromV3(issue *github.Issue) *Issue {
 		}
 	}
 	assignees := &[]github.User{}
-	for _, node := range issue.Assignees {
+	for i := range issue.Assignees {
+		node := issue.Assignees[i]
 		user := &github.User{
 			Login: node.Login,
 		}
@@ -113,7 +115,8 @@ func ComposeIssueFromV4(issueFiled *git.IssueField) *Issue {
 	severityLabel := ""
 	typeLabel := ""
 	labels := &[]github.Label{}
-	for _, node := range issueFiled.Labels.Nodes {
+	for i := range issueFiled.Labels.Nodes {
+		node := issueFiled.Labels.Nodes[i]
 		label := github.Label{
 			Name: github.String(string(node.Name)),
 		}
@@ -130,7 +133,8 @@ func ComposeIssueFromV4(issueFiled *git.IssueField) *Issue {
 		}
 	}
 	assignees := &[]github.User{}
-	for _, node := range issueFiled.Assignees.Nodes {
+	for i := range issueFiled.Assignees.Nodes {
+		node := issueFiled.Assignees.Nodes[i]
 		user := github.User{
 			Login: (*string)(&node.Login),
 		}

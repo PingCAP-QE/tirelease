@@ -23,13 +23,14 @@ var DBConn = &MysqlInfo{}
 
 func Connect(config *configs.ConfigYaml) {
 	// Params
-	url := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s&parseTime=True&loc=Local",
+	url := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s&parseTime=True&loc=%s",
 		config.Mysql.UserName,
 		config.Mysql.PassWord,
 		config.Mysql.Host,
 		config.Mysql.Port,
 		config.Mysql.DataBase,
 		config.Mysql.CharSet,
+		config.Mysql.TimeZone,
 	)
 
 	// Connect

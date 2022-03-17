@@ -20,10 +20,10 @@ type Repo struct {
 
 // List Option
 type RepoOption struct {
-	ID       int64  `json:"id"`
-	Owner    string `json:"owner,omitempty"`
-	Repo     string `json:"repo,omitempty"`
-	FullName string `json:"full_name,omitempty"`
+	ID       int64  `json:"id" form:"id"`
+	Owner    string `json:"owner,omitempty" form:"owner"`
+	Repo     string `json:"repo,omitempty" form:"repo"`
+	FullName string `json:"full_name,omitempty" form:"full_name"`
 }
 
 // DB-Table

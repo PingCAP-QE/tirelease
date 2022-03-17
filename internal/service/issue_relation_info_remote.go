@@ -56,7 +56,8 @@ func ComposeIssuePrRelationsByIssueV4(issue *git.IssueField) (*[]entity.IssuePrR
 	// Analyze timeline to compose IssuePrRelations & PullRequests
 	issuePrRelations := make([]entity.IssuePrRelation, 0)
 	pullRequests := make([]entity.PullRequest, 0)
-	for _, edge := range edges {
+	for i := range edges {
+		edge := edges[i]
 		if nil == &edge.Node || nil == &edge.Node.CrossReferencedEvent ||
 			nil == &edge.Node.CrossReferencedEvent.Source || nil == &edge.Node.CrossReferencedEvent.Source.PullRequest {
 			continue

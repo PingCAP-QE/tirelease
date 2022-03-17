@@ -34,8 +34,8 @@ func CronRefreshPullRequestV4(params *RefreshPullRequestParams) error {
 			return err
 		}
 
-		for _, pr := range prs {
-			err = repository.CreateOrUpdatePullRequest(entity.ComposePullRequestFromV4(&pr))
+		for i := range prs {
+			err = repository.CreateOrUpdatePullRequest(entity.ComposePullRequestFromV4(&(prs[i])))
 			if err != nil {
 				return err
 			}

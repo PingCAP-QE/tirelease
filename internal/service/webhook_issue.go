@@ -33,8 +33,8 @@ func CronRefreshIssuesV4(params *RefreshIssueParams) error {
 			return err
 		}
 
-		for _, issue := range issues {
-			issueRelation, err := ComposeIssueRelationInfoByIssueV4(&issue)
+		for i := range issues {
+			issueRelation, err := ComposeIssueRelationInfoByIssueV4(&(issues[i]))
 			if err != nil {
 				return err
 			}

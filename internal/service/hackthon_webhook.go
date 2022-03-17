@@ -15,7 +15,8 @@ func UpdatePrAndIssue(webhookPayload WebhookPayload) error {
 	if webhookPayload.Issue != nil {
 		issue, err := git.ClientV4.GetIssueByNumber(webhookPayload.Repository.Owner.Login, webhookPayload.Repository.Name, webhookPayload.Issue.Number)
 		// create issue affect
-		for _, minorVersion := range MinorVersionList {
+		for i := range MinorVersionList {
+			minorVersion := MinorVersionList[i]
 			issueAffect := entity.IssueAffect{
 				CreateTime:    time.Now(),
 				UpdateTime:    time.Now(),
@@ -51,8 +52,10 @@ func InitDB() error {
 	if err != nil {
 		return err
 	}
-	for _, issue := range issues {
-		for _, minorVersion := range MinorVersionList {
+	for i := range issues {
+		issue := issues[i]
+		for j := range MinorVersionList {
+			minorVersion := MinorVersionList[j]
 			issueAffect := entity.IssueAffect{
 				CreateTime:    time.Now(),
 				UpdateTime:    time.Now(),
@@ -86,16 +89,18 @@ func InitDB() error {
 
 func IssueFieldToIssue(issueFiled *git.IssueField) *entity.Issue {
 	labels := &[]github.Label{}
-	for _, labelNode := range issueFiled.Labels.Nodes {
+	for i := range issueFiled.Labels.Nodes {
+		node := issueFiled.Labels.Nodes[i]
 		label := github.Label{}
-		label.Name = github.String(string(labelNode.Name))
+		label.Name = github.String(string(node.Name))
 		*labels = append(*labels, label)
 	}
 
 	assignees := &[]github.User{}
-	for _, userNode := range issueFiled.Assignees.Nodes {
+	for i := range issueFiled.Assignees.Nodes {
+		node := issueFiled.Assignees.Nodes[i]
 		user := github.User{
-			Login: (*string)(&userNode.Login),
+			Login: (*string)(&node.Login),
 		}
 		*assignees = append(*assignees, user)
 	}
@@ -131,15 +136,17 @@ func IssueFieldToIssue(issueFiled *git.IssueField) *entity.Issue {
 
 func PullRequestFieldToPullRequest(pullRequestField *git.PullRequestField) *entity.PullRequest {
 	labels := &[]github.Label{}
-	for _, labelNode := range pullRequestField.Labels.Nodes {
+	for i := range pullRequestField.Labels.Nodes {
+		node := pullRequestField.Labels.Nodes[i]
 		label := github.Label{}
-		label.Name = github.String(string(labelNode.Name))
+		label.Name = github.String(string(node.Name))
 		*labels = append(*labels, label)
 	}
 	assignees := &[]github.User{}
-	for _, userNode := range pullRequestField.Assignees.Nodes {
+	for i := range pullRequestField.Assignees.Nodes {
+		node := pullRequestField.Assignees.Nodes[i]
 		user := github.User{
-			Login: (*string)(&userNode.Login),
+			Login: (*string)(&node.Login),
 		}
 		*assignees = append(*assignees, user)
 	}

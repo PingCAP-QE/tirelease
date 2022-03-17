@@ -118,7 +118,8 @@ func ComposeIssueAffectWithIssueID(issueID string, releaseVersions *[]entity.Rel
 			return nil, err
 		}
 	}
-	for _, releaseVersion := range *releaseVersions {
+	for i := range *releaseVersions {
+		releaseVersion := (*releaseVersions)[i]
 		var isExist bool = false
 		for _, issueAffect := range *issueAffects {
 			if issueAffect.AffectVersion == releaseVersion.Name {
@@ -148,7 +149,8 @@ func ComposeIssueAffectWithIssueV4(issue *git.IssueField) (*[]entity.IssueAffect
 
 	issueAffects := make([]entity.IssueAffect, 0)
 	// github affect label: set Yes or UnKnown
-	for _, label := range issue.Labels.Nodes {
+	for i := range issue.Labels.Nodes {
+		label := issue.Labels.Nodes[i]
 		labelName := string(label.Name)
 		if strings.HasPrefix(labelName, git.AffectsPrefixLabel) {
 			version := strings.Replace(labelName, git.AffectsPrefixLabel, "", -1)
@@ -178,7 +180,8 @@ func ComposeIssueAffectWithIssueV4(issue *git.IssueField) (*[]entity.IssueAffect
 	if err != nil {
 		return nil, err
 	}
-	for _, oldAffect := range *oldAffects {
+	for i := range *oldAffects {
+		oldAffect := (*oldAffects)[i]
 		var isExist bool = false
 		for _, issueAffect := range issueAffects {
 			if issueAffect.AffectVersion == oldAffect.AffectVersion {

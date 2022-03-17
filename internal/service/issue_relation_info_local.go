@@ -42,7 +42,7 @@ func SelectIssueRelationInfo(option *dto.IssueRelationInfoQuery) (*[]dto.IssueRe
 	}
 	alls := make([]dto.IssueRelationInfo, 0)
 	for i := range *issues {
-		issueRelationInfo, err := ComposeRelationInfoByIssue(&(*issues)[i], releaseVersions)
+		issueRelationInfo, err := ComposeRelationInfoByIssue(&((*issues)[i]), releaseVersions)
 		if nil != err {
 			return nil, err
 		}
@@ -152,7 +152,8 @@ func ComposeRelationInfoByIssue(issue *entity.Issue, releaseVersions *[]entity.R
 
 	// Find PullRequests
 	pullRequests := make([]entity.PullRequest, 0)
-	for _, issuePrRelation := range *issuePrRelations {
+	for i := range *issuePrRelations {
+		issuePrRelation := (*issuePrRelations)[i]
 		pullRequestOption := &entity.PullRequestOption{
 			PullRequestID: issuePrRelation.PullRequestID,
 		}

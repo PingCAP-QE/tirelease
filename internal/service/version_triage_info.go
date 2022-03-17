@@ -15,13 +15,16 @@ import (
 func CreateOrUpdateVersionTriageInfo(versionTriage *entity.VersionTriage) (*dto.VersionTriageInfo, error) {
 	// Check
 	releaseVersionOption := &entity.ReleaseVersionOption{
-		Name: versionTriage.VersionName,
+		FatherReleaseVersionName: versionTriage.VersionName,
+		Status:                   entity.ReleaseVersionStatusOpen,
 	}
 	releaseVersion, err := CheckReleaseVersion(releaseVersionOption)
 	if err != nil {
 		return nil, err
 	}
 	releaseBranch := releaseVersion.ReleaseBranch
+	// TODO: hack here, try to think more comfortable
+	versionTriage.VersionName = releaseVersion.Name
 
 	// Create Or Update
 	var isFrozen bool = releaseVersion.Status == entity.ReleaseVersionStatusFrozen
@@ -85,7 +88,7 @@ func SelectVersionTriageInfo(query *dto.VersionTriageInfoQuery) (*dto.VersionTri
 	versionTriageOption := &entity.VersionTriageOption{
 		ID:           query.ID,
 		IssueID:      query.IssueID,
-		VersionName:  query.VersionName,
+		VersionName:  query.Version,
 		TriageResult: query.TriageResult,
 	}
 
@@ -94,8 +97,9 @@ func SelectVersionTriageInfo(query *dto.VersionTriageInfoQuery) (*dto.VersionTri
 	if err != nil {
 		return nil, err
 	}
+
 	releaseVersion, err := repository.SelectReleaseVersionLatest(&entity.ReleaseVersionOption{
-		Name: query.VersionName,
+		Name: query.Version,
 	})
 	if err != nil {
 		return nil, err
@@ -103,7 +107,8 @@ func SelectVersionTriageInfo(query *dto.VersionTriageInfoQuery) (*dto.VersionTri
 
 	// Compose
 	versionTriageInfos := make([]dto.VersionTriageInfo, 0)
-	for _, versionTriage := range *versionTriages {
+	for i := range *versionTriages {
+		versionTriage := (*versionTriages)[i]
 		issueRelationInfos, err := SelectIssueRelationInfo(&dto.IssueRelationInfoQuery{
 			IssueID:    versionTriage.IssueID,
 			BaseBranch: releaseVersion.ReleaseBranch,
@@ -128,6 +133,9 @@ func SelectVersionTriageInfo(query *dto.VersionTriageInfoQuery) (*dto.VersionTri
 }
 
 func CheckReleaseVersion(option *entity.ReleaseVersionOption) (*entity.ReleaseVersion, error) {
+	if option == nil || option.Name == "" {
+		return nil, errors.New(fmt.Sprintf("CheckReleaseVersion params invalid: %+v failed", option))
+	}
 	releaseVersion, err := repository.SelectReleaseVersionLatest(option)
 	if err != nil {
 		return nil, err

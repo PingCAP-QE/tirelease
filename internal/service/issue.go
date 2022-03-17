@@ -76,9 +76,9 @@ func GetIssuesByTimeFromV3(owner, repo string, time *time.Time) ([]*entity.Issue
 		if nil != err {
 			return nil, err
 		}
-		for _, issue := range gitIssues {
-			if nil == issue.PullRequestLinks { // V3 considers every pull request an issue, so api return both issues and pull requests in the response
-				issues = append(issues, entity.ComposeIssueFromV3(issue))
+		for i := range gitIssues {
+			if nil == gitIssues[i].PullRequestLinks { // V3 considers every pull request an issue, so api return both issues and pull requests in the response
+				issues = append(issues, entity.ComposeIssueFromV3(gitIssues[i]))
 			}
 		}
 		page++
@@ -90,4 +90,45 @@ func GetIssuesByTimeFromV3(owner, repo string, time *time.Time) ([]*entity.Issue
 	}
 
 	return issues, nil
+}
+
+func GetIssuesByOptionV3(owner, repo string, option *github.IssueListByRepoOptions) ([]*entity.Issue, error) {
+	var page = 1
+	var pageSize = 20
+	option.Page = page
+	option.PerPage = pageSize
+	issues := make([]*entity.Issue, 0)
+
+	for {
+		gitIssues, _, err := git.Client.GetIssuesByOption(owner, repo, option)
+		if nil != err {
+			return nil, err
+		}
+		for i := range gitIssues {
+			if git.IsIssue(*gitIssues[i].HTMLURL) { // V3 considers every pull request an issue, so api return both issues and pull requests in the response
+				issues = append(issues, entity.ComposeIssueFromV3(gitIssues[i]))
+			}
+		}
+		page++
+		option.ListOptions.Page = page
+
+		if len(gitIssues) < pageSize {
+			break
+		}
+	}
+	return issues, nil
+}
+
+func BatchLabelIssues(issues []*entity.Issue, label string) error {
+	if nil == issues {
+		return nil
+	}
+
+	for _, issue := range issues {
+		_, _, err := git.Client.AddLabel(issue.Owner, issue.Repo, issue.Number, label)
+		if nil != err {
+			return err
+		}
+	}
+	return nil
 }

@@ -1,55 +1,67 @@
 package controller
 
 import (
+	"net/http"
+
 	"tirelease/internal/entity"
 	"tirelease/internal/repository"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 func CreateReleaseVersion(c *gin.Context) {
 	// Params
-	releaseVersion := &entity.ReleaseVersion{}
-	c.ShouldBind(releaseVersion)
-
-	// Action
-	err := repository.CreateReleaseVersion(releaseVersion)
-	if nil != err {
-		c.JSON(500, err.Error())
+	releaseVersion := entity.ReleaseVersion{}
+	if err := c.ShouldBindWith(&releaseVersion, binding.JSON); err != nil {
+		c.Error(err)
 		return
 	}
 
-	c.JSON(200, gin.H{"status": "ok"})
+	// Action
+	err := repository.CreateReleaseVersion(&releaseVersion)
+	if nil != err {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
 func UpdateReleaseVersion(c *gin.Context) {
 	// Params
-	releaseVersion := &entity.ReleaseVersion{}
-	c.ShouldBind(releaseVersion)
-
-	// Action
-	err := repository.UpdateReleaseVersion(releaseVersion)
-	if nil != err {
-		c.JSON(500, err.Error())
+	releaseVersion := entity.ReleaseVersion{}
+	if err := c.ShouldBindWith(&releaseVersion, binding.JSON); err != nil {
+		c.Error(err)
 		return
 	}
 
-	c.JSON(200, gin.H{"status": "ok"})
+	// Action
+	err := repository.UpdateReleaseVersion(&releaseVersion)
+	if nil != err {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
 func SelectReleaseVersion(c *gin.Context) {
 	// Params
 	option := entity.ReleaseVersionOption{}
-	c.ShouldBind(&option)
+	if err := c.ShouldBindWith(&option, binding.Form); err != nil {
+		c.Error(err)
+		return
+	}
 
 	// Action
 	releaseVersions, err := repository.SelectReleaseVersion(&option)
 	if err != nil {
-		c.JSON(500, err.Error())
+		c.Error(err)
 		return
 	}
 
-	c.JSON(200, gin.H{"data": releaseVersions})
+	c.JSON(http.StatusOK, gin.H{"data": releaseVersions})
 }
 
 func SelectReleaseVersionStatus(c *gin.Context) {
@@ -65,7 +77,7 @@ func SelectReleaseVersionStatus(c *gin.Context) {
 		ReleaseVersionStatusReleased: entity.ReleaseVersionStatusReleased,
 	}
 
-	c.JSON(200, gin.H{"data": enumResult})
+	c.JSON(http.StatusOK, gin.H{"data": enumResult})
 }
 
 func SelectReleaseVersionType(c *gin.Context) {
@@ -79,5 +91,5 @@ func SelectReleaseVersionType(c *gin.Context) {
 		ReleaseVersionTypePatch: entity.ReleaseVersionTypePatch,
 	}
 
-	c.JSON(200, gin.H{"data": enumResult})
+	c.JSON(http.StatusOK, gin.H{"data": enumResult})
 }

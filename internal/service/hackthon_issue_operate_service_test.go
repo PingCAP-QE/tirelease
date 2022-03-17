@@ -63,6 +63,7 @@ func generateConfig() *configs.ConfigYaml {
 	config.Mysql.Port = "3306"
 	config.Mysql.DataBase = "cicd_online"
 	config.Mysql.CharSet = "utf8"
+	config.Mysql.TimeZone = "Asia%2FShanghai"
 
 	return config
 }

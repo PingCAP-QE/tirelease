@@ -16,9 +16,9 @@ type IssuePrRelation struct {
 
 // List Option
 type IssuePrRelationOption struct {
-	ID            int64  `json:"id"`
-	IssueID       string `json:"issue_id,omitempty"`
-	PullRequestID string `json:"pull_request_id,omitempty"`
+	ID            int64  `json:"id" form:"id"`
+	IssueID       string `json:"issue_id,omitempty" form:"issue_id"`
+	PullRequestID string `json:"pull_request_id,omitempty" form:"pull_request_id"`
 }
 
 // DB-Table

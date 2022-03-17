@@ -3,27 +3,27 @@ package controller
 import (
 	"net/http"
 
-	"tirelease/internal/dto"
-	"tirelease/internal/service"
+	"tirelease/internal/entity"
+	"tirelease/internal/repository"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )
 
-func SelectIssueRelationInfos(c *gin.Context) {
+func SelectRepo(c *gin.Context) {
 	// Params
-	option := dto.IssueRelationInfoQuery{}
+	option := entity.RepoOption{}
 	if err := c.ShouldBindWith(&option, binding.Form); err != nil {
 		c.Error(err)
 		return
 	}
 
 	// Action
-	issueRelationInfos, err := service.SelectIssueRelationInfo(&option)
+	repos, err := repository.SelectRepo(&option)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": issueRelationInfos})
+	c.JSON(http.StatusOK, gin.H{"data": repos})
 }

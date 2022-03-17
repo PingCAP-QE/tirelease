@@ -12,6 +12,9 @@ import (
 func Routers(file string) (router *gin.Engine) {
 	router = gin.Default()
 
+	// Error
+	routeError(router)
+
 	// Cors
 	routeCors(router)
 
@@ -22,6 +25,10 @@ func Routers(file string) (router *gin.Engine) {
 	routeRestAPI(router)
 
 	return router
+}
+
+func routeError(router *gin.Engine) {
+	router.Use(APIErrorJSONReporter())
 }
 
 func routeCors(router *gin.Engine) {
@@ -68,7 +75,10 @@ func routeRestAPI(router *gin.Engine) {
 
 	ping := router.Group("/ping")
 	{
-		ping.GET("", controller.TestPingPong)
+		ping.GET("", controller.TestPingPongGet)
+		ping.GET("/error", controller.TestPingError)
+		ping.POST("", controller.TestPingPongPost)
+		ping.POST("/:name", controller.TestPingPongPost)
 	}
 
 	issue := router.Group("/issue")
@@ -77,7 +87,7 @@ func routeRestAPI(router *gin.Engine) {
 
 		issue.POST("/:issue_id/cherrypick/:version_name", controller.CreateOrUpdateVersionTriage)
 		issue.PATCH("/:issue_id/cherrypick/:version_name", controller.CreateOrUpdateVersionTriage)
-		issue.GET("/cherrypick/:version_name", controller.SelectVersionTriageInfos)
+		issue.GET("/cherrypick/:version", controller.SelectVersionTriageInfos)
 		issue.GET("/cherrypick/result", controller.SelectVersionTriageResult)
 
 		issue.PATCH("/:issue_id/affect/:version_name", controller.CreateOrUpdateIssueAffect)
@@ -86,11 +96,14 @@ func routeRestAPI(router *gin.Engine) {
 
 	releaseVersion := router.Group("/version")
 	{
-		releaseVersion.GET("/list", controller.SelectReleaseVersion)
-		releaseVersion.POST("/insert", controller.CreateReleaseVersion)
-		releaseVersion.PATCH("/update", controller.UpdateReleaseVersion)
-		releaseVersion.DELETE("/status", controller.SelectReleaseVersionStatus)
-		releaseVersion.DELETE("/type", controller.SelectReleaseVersionType)
+		releaseVersion.GET("", controller.SelectReleaseVersion)
+		releaseVersion.POST("", controller.CreateReleaseVersion)
+		releaseVersion.PATCH("", controller.UpdateReleaseVersion)
+	}
+
+	repo := router.Group("repo")
+	{
+		repo.GET("", controller.SelectRepo)
 	}
 
 	webhook := router.Group("/webhook")

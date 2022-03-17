@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"net/http"
+
 	"tirelease/commons/git"
 	"tirelease/internal/service"
 
@@ -12,12 +14,12 @@ func GithubWebhookHandler(c *gin.Context) {
 	// parse webhook payload
 	payload, err := github.ValidatePayload(c.Request, nil)
 	if err != nil {
-		c.JSON(500, err.Error())
+		c.Error(err)
 		return
 	}
 	event, err := github.ParseWebHook(github.WebHookType(c.Request), payload)
 	if err != nil {
-		c.JSON(500, err.Error())
+		c.Error(err)
 		return
 	}
 
@@ -27,7 +29,7 @@ func GithubWebhookHandler(c *gin.Context) {
 	case *github.IssuesEvent:
 		err := service.WebhookRefreshIssueV4(event.Issue)
 		if err != nil {
-			c.JSON(500, err.Error())
+			c.Error(err)
 			return
 		}
 
@@ -36,7 +38,7 @@ func GithubWebhookHandler(c *gin.Context) {
 		if git.IsIssue(*url) {
 			err := service.WebhookRefreshIssueV4(event.Issue)
 			if err != nil {
-				c.JSON(500, err.Error())
+				c.Error(err)
 				return
 			}
 		}
@@ -44,7 +46,7 @@ func GithubWebhookHandler(c *gin.Context) {
 	case *github.PullRequestEvent:
 		err := service.WebhookRefreshPullRequestV3(event.PullRequest)
 		if err != nil {
-			c.JSON(500, err.Error())
+			c.Error(err)
 			return
 		}
 
@@ -52,5 +54,5 @@ func GithubWebhookHandler(c *gin.Context) {
 
 	}
 
-	c.JSON(200, gin.H{"status": "ok"})
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }

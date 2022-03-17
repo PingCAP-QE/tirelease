@@ -51,11 +51,11 @@ const (
 
 // List Option
 type ReleaseVersionOption struct {
-	ID                       int64                `json:"id"`
-	Name                     string               `json:"name,omitempty"`
-	FatherReleaseVersionName string               `json:"father_release_version_name,omitempty"`
-	Type                     ReleaseVersionType   `json:"type,omitempty"`
-	Status                   ReleaseVersionStatus `json:"status,omitempty"`
+	ID                       int64                `json:"id" form:"id"`
+	Name                     string               `json:"name,omitempty" form:"name"`
+	FatherReleaseVersionName string               `json:"father_release_version_name,omitempty" form:"father_release_version_name"`
+	Type                     ReleaseVersionType   `json:"type,omitempty" form:"type"`
+	Status                   ReleaseVersionStatus `json:"status,omitempty" form:"status"`
 }
 
 // DB-Table

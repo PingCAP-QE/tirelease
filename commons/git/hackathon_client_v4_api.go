@@ -33,10 +33,12 @@ func (client *GithubInfoV4) GetIssuesByTimeRangeV4(owner, name string, labels []
 
 	cursor := (*githubv4.String)(nil)
 	total := 0
-	// ghLabels := make([]githubv4.String, 0, len(labels))
-	// for _, l := range labels {
-	// 	ghLabels = append(ghLabels, githubv4.String(l))
-	// }
+	ghLabels := make([]githubv4.String, 0, len(labels))
+	if len(labels) > 0 {
+		for i := range labels {
+			ghLabels = append(ghLabels, githubv4.String(labels[i]))
+		}
+	}
 
 	since := from.Add(-1 * time.Minute).Format(time.RFC3339)
 	log.Printf("fetching since %s", since)
@@ -51,8 +53,10 @@ func (client *GithubInfoV4) GetIssuesByTimeRangeV4(owner, name string, labels []
 			"owner":  githubv4.String(owner),
 			"limit":  githubv4.Int(limit),
 			"cursor": cursor,
-			// "labels": ghLabels,
-			"since": githubv4.DateTime{Time: from.Add(-1 * time.Minute)},
+			"since":  githubv4.DateTime{Time: from.Add(-1 * time.Minute)},
+		}
+		if len(ghLabels) > 0 {
+			param["labels"] = ghLabels
 		}
 
 		err = client.client.Query(context.Background(), &query, param)
@@ -62,9 +66,9 @@ func (client *GithubInfoV4) GetIssuesByTimeRangeV4(owner, name string, labels []
 		}
 		edges := query.Repository.Issues.Edges
 
-		for _, edge := range edges {
-			issues = append(issues, edge.Node)
-			log.Printf("%06d %s %s\n", edge.Node.Number, edge.Node.UpdatedAt.Format(time.RFC3339), edge.Node.Title)
+		for i := range edges {
+			issues = append(issues, edges[i].Node)
+			log.Printf("%06d %s %s\n", edges[i].Node.Number, edges[i].Node.UpdatedAt.Format(time.RFC3339), edges[i].Node.Title)
 		}
 
 		cnt := len(edges)
@@ -125,9 +129,9 @@ func (client *GithubInfoV4) GetPullRequestsFromV4(owner, name string, from time.
 		}
 		edges := query.Repository.PullRequests.Edges
 
-		for _, edge := range edges {
-			prs = append(prs, edge.Node)
-			log.Printf("%06d %s %s\n", edge.Node.Number, edge.Node.UpdatedAt.Format(time.RFC3339), edge.Node.Title)
+		for i := range edges {
+			prs = append(prs, edges[i].Node)
+			log.Printf("%06d %s %s\n", edges[i].Node.Number, edges[i].Node.UpdatedAt.Format(time.RFC3339), edges[i].Node.Title)
 		}
 
 		cnt := len(edges)
