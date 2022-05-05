@@ -9,7 +9,7 @@ import (
 	"tirelease/internal/entity"
 	"tirelease/internal/repository"
 
-	"github.com/deckarep/golang-set"
+	mapset "github.com/deckarep/golang-set"
 	"github.com/pkg/errors"
 )
 
