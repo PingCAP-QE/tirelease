@@ -78,6 +78,8 @@ type ReleaseVersionOption struct {
 
 	StatusList []ReleaseVersionStatus `json:"status_list,omitempty" form:"status_list"`
 
+	ShortType ReleaseVersionShortType `json:"short_type,omitempty" form:"short_type"`
+
 	ListOption
 }
 

@@ -311,7 +311,7 @@ func SaveIssueRelationInfo(issueRelationInfo *dto.IssueRelationInfo) error {
 // 只选择对应version状态为“upcoming”的versionTriage
 // 由于upcoming状态的version数据量小，因此在查询时不对versionName进行限制
 func pickUpcomingTriages(triages *[]entity.VersionTriage) (*[]entity.VersionTriage, error) {
-	versionOption := &entity.ReleaseVersionOption{Status: "upcoming"}
+	versionOption := &entity.ReleaseVersionOption{Status: entity.ReleaseVersionStatusUpcoming}
 	upcomingVersions, err := repository.SelectReleaseVersion(versionOption)
 
 	if err != nil {

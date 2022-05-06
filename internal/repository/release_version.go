@@ -110,14 +110,28 @@ func ReleaseVersionWhere(option *entity.ReleaseVersionOption) string {
 	if option.Name != "" {
 		sql += " and release_version.name = @Name"
 	}
-	if option.Major != 0 {
-		sql += " and release_version.major = @Major"
-	}
-	if option.Minor != 0 {
-		sql += " and release_version.minor = @Minor"
-	}
-	if option.Patch != 0 {
-		sql += " and release_version.patch = @Patch"
+	// if option.Major != 0 {
+	// 	sql += " and release_version.major = @Major"
+	// }
+	// if option.Minor != 0 {
+	// 	sql += " and release_version.minor = @Minor"
+	// }
+	// if option.Patch != 0 {
+	// 	sql += " and release_version.patch = @Patch"
+	// }
+	if option.ShortType != "" {
+		if option.ShortType == entity.ReleaseVersionShortTypePatch {
+			sql += " and release_version.major = @Major"
+			sql += " and release_version.minor = @Minor"
+			sql += " and release_version.patch = @Patch"
+		}
+		if option.ShortType == entity.ReleaseVersionShortTypeMinor {
+			sql += " and release_version.major = @Major"
+			sql += " and release_version.minor = @Minor"
+		}
+		if option.ShortType == entity.ReleaseVersionShortTypeMajor {
+			sql += " and release_version.major = @Major"
+		}
 	}
 	if option.Addition != "" {
 		sql += " and release_version.addition = @Addition"

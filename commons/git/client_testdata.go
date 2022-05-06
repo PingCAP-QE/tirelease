@@ -1,7 +1,7 @@
 package git
 
 // 测试用例数据
-var TestToken string = "(Personal Access Token)"
+var TestToken string = "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"
 var TestIssueId int = 28078
 var TestPullRequestId int = 31287
 var TestOwner string = "pingcap"
