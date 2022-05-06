@@ -109,9 +109,13 @@ func SelectIssueRelationInfo(option *dto.IssueRelationInfoQuery) (*[]dto.IssueRe
 			IssueIDs: issueIDs,
 		}
 		versionTriageAlls, err := repository.SelectVersionTriage(versionTriageOption)
+		if nil == err {
+			versionTriageAlls, err = pickUpcomingTriages(versionTriageAlls)
+		}
 		if nil != err {
 			return nil, nil, err
 		}
+
 		versionTriageAll = append(versionTriageAll, (*versionTriageAlls)...)
 	}
 
@@ -302,4 +306,35 @@ func SaveIssueRelationInfo(issueRelationInfo *dto.IssueRelationInfo) error {
 	}
 
 	return nil
+}
+
+// 只选择对应version状态为“upcoming”的versionTriage
+// 由于upcoming状态的version数据量小，因此在查询时不对versionName进行限制
+func pickUpcomingTriages(triages *[]entity.VersionTriage) (*[]entity.VersionTriage, error) {
+	versionOption := &entity.ReleaseVersionOption{Status: "upcoming"}
+	upcomingVersions, err := repository.SelectReleaseVersion(versionOption)
+
+	if err != nil {
+		return nil, err
+	}
+
+	upcomingTriages := make([]entity.VersionTriage, 0)
+
+	for _, triage := range *triages {
+		if containVersion(upcomingVersions, triage.VersionName) {
+			upcomingTriages = append(upcomingTriages, triage)
+		}
+	}
+
+	return &upcomingTriages, nil
+}
+
+func containVersion(versions *[]entity.ReleaseVersion, name string) bool {
+	for _, version := range *versions {
+		if version.Name == name {
+			return true
+		}
+	}
+
+	return false
 }
