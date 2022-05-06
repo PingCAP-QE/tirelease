@@ -320,7 +320,8 @@ func pickUpcomingTriages(triages *[]entity.VersionTriage) (*[]entity.VersionTria
 
 	upcomingTriages := make([]entity.VersionTriage, 0)
 
-	for _, triage := range *triages {
+	for i := range *triages {
+		triage := (*triages)[i]
 		if containVersion(upcomingVersions, triage.VersionName) {
 			upcomingTriages = append(upcomingTriages, triage)
 		}
