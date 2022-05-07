@@ -97,10 +97,12 @@ func SelectReleaseVersionActive(name string) (*entity.ReleaseVersion, error) {
 		option.Major = major
 		option.Minor = minor
 		option.StatusList = []entity.ReleaseVersionStatus{entity.ReleaseVersionStatusUpcoming, entity.ReleaseVersionStatusFrozen}
+		option.ShortType = entity.ReleaseVersionShortTypeMinor
 	} else if shortType == entity.ReleaseVersionShortTypePatch || shortType == entity.ReleaseVersionShortTypeHotfix {
 		option.Major = major
 		option.Minor = minor
 		option.Patch = patch
+		option.ShortType = entity.ReleaseVersionShortTypePatch
 	} else {
 		return nil, errors.New(fmt.Sprintf("SelectReleaseVersionActive params invalid: %+v failed", name))
 	}
@@ -117,9 +119,10 @@ func CreateNextVersionIfNotExist(preVersion *entity.ReleaseVersion) (*entity.Rel
 	major, minor, patch, _ := ComposeVersionAtom(preVersion.Name)
 
 	option := &entity.ReleaseVersionOption{
-		Major: major,
-		Minor: minor,
-		Patch: patch + 1,
+		Major:     major,
+		Minor:     minor,
+		Patch:     patch + 1,
+		ShortType: entity.ReleaseVersionShortTypePatch,
 	}
 	version, err := repository.SelectReleaseVersionLatest(option)
 	if nil == err && nil != version {

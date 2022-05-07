@@ -43,3 +43,12 @@ func TestSelectVersionTriageInfo(t *testing.T) {
 	assert.Equal(t, true, response.TotalCount > 0)
 	assert.Equal(t, true, info != nil)
 }
+
+func TestComposeVersionTriageUpcomingList(t *testing.T) {
+	t.Skip()
+	database.Connect(generateConfig())
+
+	versionTriages, err := ComposeVersionTriageUpcomingList("5.0.7")
+	assert.Equal(t, true, err == nil)
+	assert.Equal(t, true, len(versionTriages) > 0)
+}

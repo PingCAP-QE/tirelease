@@ -275,8 +275,9 @@ func ComposeVersionTriageUpcomingList(version string) ([]entity.VersionTriage, e
 
 	// select all triaged list under this minor version
 	versionOption := &entity.ReleaseVersionOption{
-		Major: major,
-		Minor: minor,
+		Major:     major,
+		Minor:     minor,
+		ShortType: entity.ReleaseVersionShortTypeMinor,
 	}
 	releaseVersions, err := repository.SelectReleaseVersion(versionOption)
 	if err != nil {
