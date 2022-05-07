@@ -16,9 +16,10 @@ type IssueRelationInfoQuery struct {
 	ClosedAtStamp  int64 `json:"closed_at_stamp" form:"closed_at_stamp"`
 
 	// Filter Option
-	AffectVersion string                    `json:"affect_version,omitempty" form:"affect_version" uri:"affect_version"`
-	AffectResult  entity.AffectResultResult `json:"affect_result,omitempty" form:"affect_result" uri:"affect_result"`
-	BaseBranch    string                    `json:"base_branch,omitempty" form:"base_branch" uri:"base_branch"`
+	AffectVersion string                      `json:"affect_version,omitempty" form:"affect_version" uri:"affect_version"`
+	AffectResult  entity.AffectResultResult   `json:"affect_result,omitempty" form:"affect_result" uri:"affect_result"`
+	BaseBranch    string                      `json:"base_branch,omitempty" form:"base_branch" uri:"base_branch"`
+	VersionStatus entity.ReleaseVersionStatus `json:"version_status,omitempty" form:"version_status" uri:"version_status"`
 }
 
 // IssueRelationInfo ReturnBack Struct

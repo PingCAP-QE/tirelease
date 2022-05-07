@@ -109,7 +109,7 @@ func SelectIssueRelationInfo(option *dto.IssueRelationInfoQuery) (*[]dto.IssueRe
 			IssueIDs: issueIDs,
 		}
 		versionTriageAlls, err := repository.SelectVersionTriage(versionTriageOption)
-		if nil == err {
+		if nil == err && option.VersionStatus == entity.ReleaseVersionStatusUpcoming {
 			versionTriageAlls, err = pickUpcomingTriages(versionTriageAlls)
 		}
 		if nil != err {

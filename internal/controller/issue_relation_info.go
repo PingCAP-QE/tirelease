@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"tirelease/internal/dto"
+	"tirelease/internal/entity"
 	"tirelease/internal/service"
 
 	"github.com/gin-gonic/gin"
@@ -24,6 +25,7 @@ func SelectIssueRelationInfos(c *gin.Context) {
 		option.PerPage = 10
 	}
 	option.ParamFill()
+	option.VersionStatus = entity.ReleaseVersionStatusUpcoming
 
 	// Action
 	issueRelationInfos, response, err := service.SelectIssueRelationInfo(&option)
