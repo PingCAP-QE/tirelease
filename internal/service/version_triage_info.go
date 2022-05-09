@@ -242,6 +242,13 @@ func ComposeVersionTriageMergeStatus(issueRelationInfo *dto.IssueRelationInfo) e
 			closeNums++
 			continue
 		}
+
+		//TODO: 当前存在approve成功hook到git，但是数据库中状态不一致的问题
+		// 这里先兼容该情况，认为merge后的pr都是已approve过的，待重新设计状态机后修改逻辑
+		if pr.Merged {
+			continue
+		}
+
 		if !pr.CherryPickApproved {
 			return entity.VersionTriageMergeStatusApprove
 		} else if !pr.AlreadyReviewed {
