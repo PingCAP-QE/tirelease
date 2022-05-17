@@ -207,6 +207,7 @@ export const VersionAdd = ({ open, onClose, versions }) => {
           </FormControl>
           <LocalizationProvider dateAdapter={AdapterDateFns}>
             <DateTimePicker
+              clearable={true}
               renderInput={(props) => <TextField {...props} />}
               label="Expected Release Time"
               value={eta}

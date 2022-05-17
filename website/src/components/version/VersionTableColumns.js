@@ -145,7 +145,8 @@ const VersionTableColumns = [
     field: "actual_release_time",
     headerName: "Released Time",
     headerAlign: "left",
-    hide: false,
+// Hide the actual released time until the more powerful version functions are built.
+    hide: true,
     align: "left",
     editable: false,
     filterable: false,
