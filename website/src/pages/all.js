@@ -35,6 +35,8 @@ function Table() {
     Columns.number,
     Columns.title,
     Columns.state,
+    Columns.createdTime,
+    Columns.closedTime,
     Columns.pr,
     Columns.type,
     Columns.severity,
