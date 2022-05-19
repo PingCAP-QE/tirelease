@@ -128,7 +128,7 @@ export const VersionUpdate = ({ open, onClose, row }) => {
               </MenuItem>
               <MenuItem value={"planned"}>planned</MenuItem>
               <MenuItem value={"frozen"}>frozen</MenuItem>
-              <MenuItem value={"released"} disabled={true}>released</MenuItem>
+              <MenuItem value={"released"}>released</MenuItem>
               <MenuItem value={"cancelled"}>cancelled</MenuItem>
             </Select>
           </FormControl>
@@ -162,6 +162,7 @@ export const VersionUpdate = ({ open, onClose, row }) => {
           </FormControl>
           <LocalizationProvider dateAdapter={AdapterDateFns}>
             <DateTimePicker
+              clearable={true}
               renderInput={(props) => <TextField {...props} />}
               label="Expected Release Time"
               value={eta}
@@ -190,9 +191,8 @@ export const VersionUpdate = ({ open, onClose, row }) => {
             try {
               etaDate = eta.toISOString();
             } catch (e) {}
-            if (etaDate) {
-              payload.plan_release_time = etaDate;
-            }
+            // etaDate is not compulsory
+            payload.plan_release_time = etaDate;
             create.mutate(payload);
           }}
           variant="contained"
