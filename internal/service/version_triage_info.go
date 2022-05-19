@@ -130,6 +130,7 @@ func SelectVersionTriageInfo(query *dto.VersionTriageInfoQuery) (*dto.VersionTri
 		}
 
 		for i := range versionTriages {
+
 			versionTriage := versionTriages[i]
 			versionTriageInfo := dto.VersionTriageInfo{}
 			versionTriageInfo.VersionTriage = &versionTriage
@@ -140,6 +141,7 @@ func SelectVersionTriageInfo(query *dto.VersionTriageInfoQuery) (*dto.VersionTri
 				if issueRelationInfo.Issue.IssueID == versionTriage.IssueID {
 					versionTriageInfo.IssueRelationInfo = &issueRelationInfo
 					versionTriageInfo.VersionTriageMergeStatus = ComposeVersionTriageMergeStatus(&issueRelationInfo)
+					fillVersionTriageDefaultValue(&issueRelationInfo, &versionTriage)
 					break
 				}
 			}
@@ -396,4 +398,12 @@ func ExportHistoryVersionTriageInfo(info *dto.IssueRelationInfo, releaseVersions
 	}
 
 	return nil
+}
+
+func fillVersionTriageDefaultValue(issueRelationInfo *dto.IssueRelationInfo, versionTriage *entity.VersionTriage) {
+	if len(*issueRelationInfo.VersionTriages) == 0 {
+		if issueRelationInfo.Issue.SeverityLabel == git.SeverityCriticalLabel {
+			versionTriage.BlockVersionRelease = entity.BlockVersionReleaseResultBlock
+		}
+	}
 }
