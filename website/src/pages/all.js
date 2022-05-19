@@ -35,6 +35,8 @@ function Table() {
     Columns.number,
     Columns.title,
     Columns.state,
+    Columns.createdTime,
+    Columns.closedTime,
     Columns.pr,
     Columns.type,
     Columns.severity,
@@ -83,6 +85,19 @@ function Table() {
             versions: versionQuery.data,
           },
         },
+        {
+          ...Filters.createTime,
+          data: {
+            ...JSON.parse(JSON.stringify(Filters.createTime.data)),
+          },
+        },
+        {
+          ...Filters.closeTime,
+          data: {
+            ...JSON.parse(JSON.stringify(Filters.closeTime.data)),
+          },
+        },
+
       ]}
       customFilter={true}
     ></IssueGrid>

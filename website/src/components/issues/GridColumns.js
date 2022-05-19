@@ -8,6 +8,7 @@ import { Button, Dialog, Stack, Typography } from "@mui/material";
 import { useState } from "react";
 import { renderComment } from "./renderer/Comment";
 import { renderChanged } from "./renderer/ChangedItem";
+import { renderDateTime } from './renderer/Time'
 
 const id = {
   field: "id",
@@ -83,6 +84,26 @@ const state = {
   headerName: "State",
   valueGetter: (params) => params.row.issue.state,
   renderCell: renderIssueState,
+};
+
+const createdTime = {
+  field: "create_time",
+  headerName: "Create Time",
+  hide: true,
+  valueGetter: (params) => params.row.issue.create_time,
+  renderCell: (params) => {
+    return renderDateTime(params.row.issue.create_time);
+  },
+};
+
+const closedTime = {
+  field: "close_time",
+  headerName: "Close Time",
+  hide: true,
+  valueGetter: (params) => params.row.issue.close_time,
+  renderCell: (params) => {
+    return renderDateTime(params.row.issue.close_time);
+  },
 };
 
 const assignee = {
@@ -176,6 +197,8 @@ const Columns = {
   number,
   title,
   state,
+  createdTime,
+  closedTime,
   type,
   labels,
   assignee,

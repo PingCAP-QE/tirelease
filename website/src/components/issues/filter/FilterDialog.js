@@ -10,6 +10,9 @@ import Select from "@mui/material/Select";
 import FormGroup from "@mui/material/FormGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import { fetchVersion } from "../fetcher/fetchVersion";
+import DateTimePicker from "@mui/lab/DateTimePicker";
+import AdapterDateFns from "@mui/lab/AdapterDateFns";
+import LocalizationProvider from "@mui/lab/LocalizationProvider";
 
 export const stringify = (filter) =>
   (filter.stringify || ((filter) => filter))(filter);
@@ -272,7 +275,52 @@ const affect = {
   },
 };
 
-export const Filters = { number, repo, title, affect, type, state, severity };
+const createTime = {
+  name: "Create Time",
+  data: {
+    createTime:  null,
+  },
+  stringify: (self) => {
+    return self.data.createTime ? `created_at_stamp=${self.data.createTime.getTime()/1000}` : "";
+  },
+  render: ({ data, update }) => {
+    return (
+      <LocalizationProvider dateAdapter={AdapterDateFns}>
+        <DateTimePicker
+          renderInput={(props) => <TextField {...props} />}
+          label="from"
+          value={data.createTime}
+          onChange={(e) => update({ createTime: e })}
+        />
+      </LocalizationProvider>
+    );
+  },
+};
+
+const closeTime = {
+  name: "Close Time",
+  data: {
+    closeTime: null,
+  },
+  stringify: (self) => {
+    return self.data.closeTime ? `closed_at_stamp=${self.data.closeTime.getTime()/1000}` : "";
+  },
+  render: ({ data, update }) => {
+    return (
+      <LocalizationProvider dateAdapter={AdapterDateFns}>
+        <DateTimePicker
+          renderInput={(props) => <TextField {...props} />}
+          label="from"
+          value={data.closeTime}
+          onChange={(e) => update({ closeTime: e })}
+        />
+      </LocalizationProvider>
+    );
+  },
+};
+
+
+export const Filters = { number, repo, title, affect, type, state, severity, createTime, closeTime };
 
 export function FilterDialog({ open, onClose, onUpdate, filters }) {
   const [filterState, setFilterState] = React.useState(
