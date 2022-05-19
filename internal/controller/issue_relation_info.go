@@ -14,6 +14,7 @@ import (
 func SelectIssueRelationInfos(c *gin.Context) {
 	// Params
 	option := dto.IssueRelationInfoQuery{}
+
 	if err := c.ShouldBindWith(&option, binding.Form); err != nil {
 		c.Error(err)
 		return

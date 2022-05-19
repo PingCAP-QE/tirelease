@@ -85,6 +85,19 @@ function Table() {
             versions: versionQuery.data,
           },
         },
+        {
+          ...Filters.createTime,
+          data: {
+            ...JSON.parse(JSON.stringify(Filters.createTime.data)),
+          },
+        },
+        {
+          ...Filters.closeTime,
+          data: {
+            ...JSON.parse(JSON.stringify(Filters.closeTime.data)),
+          },
+        },
+
       ]}
       customFilter={true}
     ></IssueGrid>
