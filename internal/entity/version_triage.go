@@ -18,6 +18,7 @@ type VersionTriage struct {
 	DueTime             *time.Time                `json:"due_time,omitempty"`
 	Comment             string                    `json:"comment,omitempty"`
 	ChangedItem         VersionTriageChangedItem  `json:"changed_item,omitempty"`
+	UpdatedVars         []VersionTriageUpdatedVar `json:"updated_vars,omitempty" gorm:"-"`
 }
 
 // Enum type
@@ -59,6 +60,16 @@ const (
 	VersionTriageChangedItemBehavior       = VersionTriageChangedItem("behavior")
 	VersionTriageChangedItemNone           = VersionTriageChangedItem("none")
 	VersionTriageChangedItemUnKnown        = VersionTriageChangedItem("unknown")
+)
+
+type VersionTriageUpdatedVar string
+
+const (
+	VersionTriageUpdatedVarTriageOwner  = VersionTriageUpdatedVar("triage_owner")
+	VersionTriageUpdatedVarTriageResult = VersionTriageUpdatedVar("triage_result")
+	VersionTriageUpdatedVarBlockRelease = VersionTriageUpdatedVar("block_version_release")
+	VersionTriageUpdatedVarDueTime      = VersionTriageUpdatedVar("due_time")
+	VersionTriageUpdatedVarComment      = VersionTriageUpdatedVar("comment")
 )
 
 // List Option

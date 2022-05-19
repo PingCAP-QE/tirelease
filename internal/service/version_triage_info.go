@@ -31,14 +31,26 @@ func CreateOrUpdateVersionTriageInfo(versionTriage *entity.VersionTriage) (*dto.
 		return nil, err
 	}
 
+	storedVersionTriage, err := repository.SelectVersionTriage(&entity.VersionTriageOption{
+		IssueID:     versionTriage.IssueID,
+		VersionName: releaseVersion.Name,
+	})
+
+	if err != nil {
+		return nil, err
+	}
 	// create or update
 	var isFrozen bool = releaseVersion.Status == entity.ReleaseVersionStatusFrozen
 	var isAccept bool = versionTriage.TriageResult == entity.VersionTriageResultAccept
 	if isFrozen && isAccept {
 		versionTriage.TriageResult = entity.VersionTriageResultAcceptFrozen
+		versionTriage.UpdatedVars = append(versionTriage.UpdatedVars, entity.VersionTriageUpdatedVarTriageResult)
 	}
-	if issueRelationInfo.Issue.SeverityLabel == git.SeverityCriticalLabel {
+
+	// 当issue为critical，且数据库中没有数据或BlockVersionRelease字段为空时，设置默认值为Block
+	if issueRelationInfo.Issue.SeverityLabel == git.SeverityCriticalLabel && (len(*storedVersionTriage) == 0 || (*storedVersionTriage)[0].BlockVersionRelease == "") {
 		versionTriage.BlockVersionRelease = entity.BlockVersionReleaseResultBlock
+		versionTriage.UpdatedVars = append(versionTriage.UpdatedVars, entity.VersionTriageUpdatedVarBlockRelease)
 	}
 	if err := repository.CreateOrUpdateVersionTriage(versionTriage); err != nil {
 		return nil, err
