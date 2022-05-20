@@ -9,6 +9,7 @@ import { useState } from "react";
 import { renderComment } from "./renderer/Comment";
 import { renderChanged } from "./renderer/ChangedItem";
 import { renderDateTime } from './renderer/Time'
+import { renderBlockRelease } from "./renderer/BlockRelease";
 
 const id = {
   field: "id",
@@ -144,6 +145,7 @@ const releaseBlock = {
   field: "release_block",
   headerName: "Release Blocked",
   valueGetter: (params) => params.row.version_triage.block_version_release,
+  renderCell: renderBlockRelease 
 };
 
 const comment = {
