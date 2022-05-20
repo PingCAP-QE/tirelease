@@ -11,7 +11,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func CreateOrUpdateVersionTriageInfo(versionTriage *entity.VersionTriage) (*dto.VersionTriageInfo, error) {
+func CreateOrUpdateVersionTriageInfo(versionTriage *entity.VersionTriage, updatedVars ...entity.VersionTriageUpdatedVar) (*dto.VersionTriageInfo, error) {
 	// find version
 	releaseVersion, err := SelectReleaseVersionActive(versionTriage.VersionName)
 	if err != nil {
@@ -31,16 +31,28 @@ func CreateOrUpdateVersionTriageInfo(versionTriage *entity.VersionTriage) (*dto.
 		return nil, err
 	}
 
+	storedVersionTriage, err := repository.SelectVersionTriage(&entity.VersionTriageOption{
+		IssueID:     versionTriage.IssueID,
+		VersionName: releaseVersion.Name,
+	})
+
+	if err != nil {
+		return nil, err
+	}
 	// create or update
 	var isFrozen bool = releaseVersion.Status == entity.ReleaseVersionStatusFrozen
 	var isAccept bool = versionTriage.TriageResult == entity.VersionTriageResultAccept
 	if isFrozen && isAccept {
 		versionTriage.TriageResult = entity.VersionTriageResultAcceptFrozen
+		updatedVars = append(updatedVars, entity.VersionTriageUpdatedVarTriageResult)
 	}
-	if issueRelationInfo.Issue.SeverityLabel == git.SeverityCriticalLabel {
+
+	// 当issue为critical，且数据库中没有数据或BlockVersionRelease字段为空时，设置默认值为Block
+	if issueRelationInfo.Issue.SeverityLabel == git.SeverityCriticalLabel && (len(*storedVersionTriage) == 0 || (*storedVersionTriage)[0].BlockVersionRelease == "") {
 		versionTriage.BlockVersionRelease = entity.BlockVersionReleaseResultBlock
+		updatedVars = append(updatedVars, entity.VersionTriageUpdatedVarBlockRelease)
 	}
-	if err := repository.CreateOrUpdateVersionTriage(versionTriage); err != nil {
+	if err := repository.CreateOrUpdateVersionTriage(versionTriage, updatedVars...); err != nil {
 		return nil, err
 	}
 

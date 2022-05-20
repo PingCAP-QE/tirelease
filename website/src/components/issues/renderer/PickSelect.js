@@ -23,7 +23,8 @@ export default function PickSelect({
     mutation.mutate({
       issue_id: id,
       version_name: version,
-      triage_result: mapPickStatusToBackend(event.target.value)
+      triage_result: mapPickStatusToBackend(event.target.value),
+      updated_vars: ["triage_result"]
     });
     onChange(event.target.value);
     setAffects(event.target.value);

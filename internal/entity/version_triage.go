@@ -61,6 +61,16 @@ const (
 	VersionTriageChangedItemUnKnown        = VersionTriageChangedItem("unknown")
 )
 
+type VersionTriageUpdatedVar string
+
+const (
+	VersionTriageUpdatedVarTriageOwner  = VersionTriageUpdatedVar("triage_owner")
+	VersionTriageUpdatedVarTriageResult = VersionTriageUpdatedVar("triage_result")
+	VersionTriageUpdatedVarBlockRelease = VersionTriageUpdatedVar("block_version_release")
+	VersionTriageUpdatedVarDueTime      = VersionTriageUpdatedVar("due_time")
+	VersionTriageUpdatedVarComment      = VersionTriageUpdatedVar("comment")
+)
+
 // List Option
 type VersionTriageOption struct {
 	ID           int64               `json:"id" form:"id" uri:"id"`
@@ -72,6 +82,12 @@ type VersionTriageOption struct {
 	VersionNameList []string `json:"version_name_list,omitempty" form:"version_name_list" uri:"version_name_list"`
 
 	ListOption
+}
+
+type VersionTriageModifyOption struct {
+	VersionTriage
+
+	UpdatedVars []VersionTriageUpdatedVar `json:"updated_vars,omitempty"`
 }
 
 // DB-Table

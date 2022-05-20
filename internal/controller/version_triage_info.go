@@ -13,14 +13,14 @@ import (
 
 func CreateOrUpdateVersionTriage(c *gin.Context) {
 	// Params
-	versionTriage := entity.VersionTriage{}
-	if err := c.ShouldBindWith(&versionTriage, binding.JSON); err != nil {
+	versionTriageModifyOption := entity.VersionTriageModifyOption{}
+	if err := c.ShouldBindWith(&versionTriageModifyOption, binding.JSON); err != nil {
 		c.Error(err)
 		return
 	}
 
 	// Action
-	versionTriageInfo, err := service.CreateOrUpdateVersionTriageInfo(&versionTriage)
+	versionTriageInfo, err := service.CreateOrUpdateVersionTriageInfo(&versionTriageModifyOption.VersionTriage, versionTriageModifyOption.UpdatedVars...)
 	if nil != err {
 		c.Error(err)
 		return
