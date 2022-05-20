@@ -35,6 +35,9 @@ const number = {
       />
     );
   },
+  filter: (params, self) => {
+    return params.number == self.data.issueNumber
+  }
 };
 
 const state = {
@@ -69,6 +72,12 @@ const state = {
       </FormGroup>
     );
   },
+  filter: (params, self) => {
+    if (self.data.open ^ self.data.closed) {
+      return self.stringify(self).includes(params.state)
+    }
+    return true;
+  }
 };
 
 const issueTypes = ["bug", "enhancement", "featur-request"];
@@ -100,6 +109,12 @@ const type = {
       </Select>
     );
   },
+  filter: (params, self) => {
+    if (self.data.selected !== undefined) {
+      return self.stringify(self).includes(params.type_label)
+    }
+    return true;
+  }
 };
 
 const title = {
@@ -122,6 +137,9 @@ const title = {
       />
     );
   },
+  filter: (params, self) => {
+    return params.title.includes(self.data.title)
+  }
 };
 
 const repos = ["tidb", "tiflash", "tikv", "pd", "tiflow"];
@@ -153,6 +171,12 @@ const repo = {
       </Select>
     );
   },
+  filter: (params, self) => {
+    if (self.data.selected == undefined) {
+      return true
+    }
+    return params.repo == self.data.selected
+  }
 };
 
 const severityLabels = ["critical", "major", "moderate", "minor"];
@@ -216,6 +240,12 @@ const severity = {
       </FormGroup>
     );
   },
+  filter: (params, self) => {
+    return severityLabels
+    .filter((label) => self.data[label])
+    .map((label) => `severity_labels=severity/${label}`)
+    .join("&").includes(params.severity_label); 
+  }
 };
 
 const affect = {
@@ -273,15 +303,19 @@ const affect = {
       </Stack>
     );
   },
+  filter: (params, self) => {
+    // TODO 当All Issues页面需要前端筛选时补充该逻辑
+    return true;
+  }
 };
 
 const createTime = {
   name: "Create Time",
   data: {
-    createTime:  null,
+    createTime: null,
   },
   stringify: (self) => {
-    return self.data.createTime ? `created_at_stamp=${self.data.createTime.getTime()/1000}` : "";
+    return self.data.createTime ? `created_at_stamp=${self.data.createTime.getTime() / 1000}` : "";
   },
   render: ({ data, update }) => {
     return (
@@ -295,6 +329,10 @@ const createTime = {
       </LocalizationProvider>
     );
   },
+  filter: (params, self) => {
+    // TODO 当All Issues页面需要前端筛选时补充该逻辑
+    return true;
+  }
 };
 
 const closeTime = {
@@ -303,7 +341,7 @@ const closeTime = {
     closeTime: null,
   },
   stringify: (self) => {
-    return self.data.closeTime ? `closed_at_stamp=${self.data.closeTime.getTime()/1000}` : "";
+    return self.data.closeTime ? `closed_at_stamp=${self.data.closeTime.getTime() / 1000}` : "";
   },
   render: ({ data, update }) => {
     return (
@@ -317,6 +355,10 @@ const closeTime = {
       </LocalizationProvider>
     );
   },
+  filter: (params, self) => {
+    // TODO 当All Issues页面需要前端筛选时补充该逻辑
+    return true;
+  }
 };
 
 
