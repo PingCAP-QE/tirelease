@@ -18,7 +18,6 @@ type VersionTriage struct {
 	DueTime             *time.Time                `json:"due_time,omitempty"`
 	Comment             string                    `json:"comment,omitempty"`
 	ChangedItem         VersionTriageChangedItem  `json:"changed_item,omitempty"`
-	UpdatedVars         []VersionTriageUpdatedVar `json:"updated_vars,omitempty" gorm:"-"`
 }
 
 // Enum type
@@ -83,6 +82,12 @@ type VersionTriageOption struct {
 	VersionNameList []string `json:"version_name_list,omitempty" form:"version_name_list" uri:"version_name_list"`
 
 	ListOption
+}
+
+type VersionTriageModifyOption struct {
+	VersionTriage
+
+	UpdatedVars []VersionTriageUpdatedVar `json:"updated_vars,omitempty"`
 }
 
 // DB-Table

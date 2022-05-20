@@ -61,7 +61,7 @@ func UpdateVersionTriage(versionTriage *entity.VersionTriage) error {
 	return nil
 }
 
-func CreateOrUpdateVersionTriage(versionTriage *entity.VersionTriage) error {
+func CreateOrUpdateVersionTriage(versionTriage *entity.VersionTriage, updatedVars ...entity.VersionTriageUpdatedVar) error {
 	// 存储
 	if versionTriage.CreateTime.IsZero() {
 		versionTriage.CreateTime = time.Now()
@@ -70,7 +70,7 @@ func CreateOrUpdateVersionTriage(versionTriage *entity.VersionTriage) error {
 		versionTriage.UpdateTime = time.Now()
 	}
 	if err := database.DBConn.DB.Clauses(clause.OnConflict{
-		DoUpdates: clause.AssignmentColumns(composeUpdatedVars(*versionTriage)),
+		DoUpdates: clause.AssignmentColumns(composeUpdatedVars(updatedVars...)),
 	}).Create(&versionTriage).Error; err != nil {
 		return errors.Wrap(err, fmt.Sprintf("create or update version triage: %+v failed", versionTriage))
 	}
@@ -126,13 +126,13 @@ func VersionTriageLimit(option *entity.VersionTriageOption) string {
 	return sql
 }
 
-func composeUpdatedVars(versionTriage entity.VersionTriage) []string {
-	if len(versionTriage.UpdatedVars) == 0 {
+func composeUpdatedVars(updatedVars ...entity.VersionTriageUpdatedVar) []string {
+	if len(updatedVars) == 0 {
 		return []string{"update_time", "triage_owner", "triage_result", "block_version_release", "due_time", "comment"}
 	}
 
 	vars := []string{"update_time"}
-	for _, v := range versionTriage.UpdatedVars {
+	for _, v := range updatedVars {
 		if string(v) == "update_time" {
 			continue
 		}
