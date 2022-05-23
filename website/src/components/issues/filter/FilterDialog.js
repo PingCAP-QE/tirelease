@@ -334,7 +334,7 @@ const createTime = {
     if (self.data.createTime == null) {
       return true;
     }
-    return new Date(params.create_time).getTime() >= self.data.createTime.getTime();
+    return new Date(params.issue.create_time).getTime() >= self.data.createTime.getTime();
   }
 };
 
@@ -363,7 +363,7 @@ const closeTime = {
       return true;
     }
 
-    return new Date(params.close_time).getTime() >= self.data.closeTime.getTime();
+    return new Date(params.issue.close_time).getTime() >= self.data.closeTime.getTime();
   }
 };
 
@@ -389,8 +389,11 @@ const triageResult = {
         }}
         value={data.selected}
       >
-        <MenuItem value={undefined}></MenuItem>
+        <MenuItem value={undefined}>&nbsp;</MenuItem>
         {triageResultLabel.map((label) => {
+          if(label == "N/A") {
+            return <MenuItem value={label}>Not Triaged</MenuItem>; 
+          }
           return <MenuItem value={label}>{label}</MenuItem>;
         })}
       </Select>
