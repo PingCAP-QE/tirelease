@@ -10,7 +10,7 @@ import { useParams } from "react-router-dom";
 const Release = () => {
   const params = useParams();
   const version = params.version === undefined ? "none" : params.version;
-  const minorVersion = version == "none"?"none": version.split(".").slice(0, 2).join(".");
+  const minorVersion = version == "none" ? "none" : version.split(".").slice(0, 2).join(".");
 
 
   return (
@@ -37,6 +37,14 @@ const Release = () => {
                 data: JSON.parse(JSON.stringify(Filters.state.data)),
               },
               {
+                ...Filters.versionTriageStatus,
+                data: JSON.parse(JSON.stringify(Filters.versionTriageStatus.data))
+              },
+              {
+                ...Filters.triageResult,
+                data: JSON.parse(JSON.stringify(Filters.triageResult.data))
+              },
+              {
                 ...Filters.type,
                 data: JSON.parse(JSON.stringify(Filters.type.data)),
               },
@@ -57,7 +65,7 @@ const Release = () => {
               },
 
             ]}
-          columns={[
+            columns={[
               ...Columns.issueBasicInfo,
               Columns.createdTime,
               Columns.closedTime,

@@ -61,7 +61,7 @@ function ReleaseCandidates({ version, filters, columns}) {
   if (filters && rows) {
     const activeFilters = filters.filter((f)=> f.stringify(f).length > 0)
     activeFilters.forEach(element => {
-      rows = rows.filter((f) => element.filter(f.issue, element))
+      rows = rows.filter((f) => element.filter(f, element))
     });
   }
 
