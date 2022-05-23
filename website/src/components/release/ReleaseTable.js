@@ -16,7 +16,7 @@ import TriageDialog from "../issues/TriageDialog";
 import { fetchVersionIssue } from "./fetchVersionIssue";
 import { FilterDialog, stringify } from "../issues/filter/FilterDialog";
 
-function ReleaseCandidates({ version, filters }) {
+function ReleaseCandidates({ version, filters, columns}) {
   const [versionTriageData, setVersionTriageData] = useState(undefined);
   const onClose = () => {
     setVersionTriageData(undefined);
@@ -71,16 +71,7 @@ function ReleaseCandidates({ version, filters }) {
     <div style={{ height: 650, width: "100%" }}>
       <DataGrid
         rows={rows}
-        columns={[
-          ...Columns.issueBasicInfo,
-          Columns.triageStatus,
-          Columns.releaseBlock,
-          Columns.getAffectionOnVersion(minorVersion),
-          Columns.getPROnVersion(minorVersion),
-          Columns.getPickOnVersion(minorVersion),
-          Columns.changed,
-          Columns.comment,
-        ]}
+        columns={columns}
         onRowClick={(e) => {
           console.log(e);
           openVersionTriageDialog(e);
@@ -103,7 +94,8 @@ function ReleaseCandidates({ version, filters }) {
 
 const ReleaseTable = ({
   filters = [],
-  customFilter = false
+  customFilter = false,
+  columns = [Columns.number, Columns.title]
 }) => {
   const navigate = useNavigate();
   const params = useParams();
@@ -177,7 +169,7 @@ const ReleaseTable = ({
           </Dialog> */}
         </Stack>
         {version !== "none" && (
-          <ReleaseCandidates version={version} filters={filtersInUse}></ReleaseCandidates>
+          <ReleaseCandidates version={version} filters={filtersInUse} columns={columns}></ReleaseCandidates>
         )}
         {customFilter && (
           <FilterDialog //TODO 
