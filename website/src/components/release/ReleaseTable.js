@@ -1,20 +1,22 @@
 import { Stack } from "@mui/material";
 import VersionSelector from "./VersionSelector";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
-import { useQuery } from "react-query";
+import { useQuery, useQueryClient } from "react-query";
 import { url } from "../../utils";
 import Columns from "../issues/GridColumns";
 import { useParams, useNavigate } from "react-router-dom";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import TriageDialog from "../issues/TriageDialog";
+import { fetchVersionIssue } from "./fetchVersionIssue";
+import { FilterDialog, stringify } from "../issues/filter/FilterDialog";
 
-function ReleaseCandidates({ version }) {
+function ReleaseCandidates({ version, filters }) {
   const [versionTriageData, setVersionTriageData] = useState(undefined);
   const onClose = () => {
     setVersionTriageData(undefined);
@@ -23,16 +25,19 @@ function ReleaseCandidates({ version }) {
     setVersionTriageData(data);
   };
 
-  const { isLoading, error, data } = useQuery(`release-${version}`, () => {
-    return fetch(url(`issue/cherrypick/${version}?page=1&per_page=1000`))
-      .then(async (res) => {
-        const data = await res.json();
-        return data;
+  const filterStrings = filters.map(stringify).filter((f) => f.length > 0);
+
+  console.log(filterStrings);
+
+  const { isLoading, error, data } = useQuery(
+    [`release-${version}`],
+    () => {
+      return fetchVersionIssue({
+        version: version,
+        page: 1,
+        perPage: 1000,
       })
-      .catch((e) => {
-        console.log(e);
-      });
-  });
+    });
   if (isLoading) {
     return <p>Loading...</p>;
   }
@@ -43,8 +48,8 @@ function ReleaseCandidates({ version }) {
   if (data?.data === undefined) {
     return <p>data is wrong, maybe your version is incorrect</p>;
   }
-  console.log("release data", data);
-  const rows = data.data.version_triage_infos.map((item) => {
+
+  var rows = data.data.version_triage_infos.map((item) => {
     return {
       id: item.issue_relation_info.issue.issue_id,
       ...item.issue_relation_info,
@@ -52,6 +57,14 @@ function ReleaseCandidates({ version }) {
       version_triage_merge_status: item.version_triage_merge_status,
     };
   });
+
+  if (filters && rows) {
+    const activeFilters = filters.filter((f)=> f.stringify(f).length > 0)
+    activeFilters.forEach(element => {
+      rows = rows.filter((f) => element.filter(f.issue, element))
+    });
+  }
+
   const minorVersion = version.split(".").slice(0, 2).join(".");
 
   return (
@@ -75,8 +88,8 @@ function ReleaseCandidates({ version }) {
         components={{
           Toolbar: GridToolbar,
         }}
-        showCellRightBorder = {true}
-        showColumnRightBorder = {false}
+        showCellRightBorder={true}
+        showColumnRightBorder={false}
       ></DataGrid>
       <TriageDialog
         onClose={onClose}
@@ -88,11 +101,21 @@ function ReleaseCandidates({ version }) {
   );
 }
 
-const ReleaseTable = () => {
+const ReleaseTable = ({
+  filters = [],
+  customFilter = false
+}) => {
   const navigate = useNavigate();
   const params = useParams();
   const version = params.version === undefined ? "none" : params.version;
   const [open, setOpen] = useState(false);
+  const [filterDialog, setFilterDialog] = useState(false);
+
+  const [selectedFilters, setSelectedFilters] = useState(filters);
+
+  const filtersInUse = customFilter ? selectedFilters : filters;
+
+  const filterStrings = filtersInUse.map(stringify).filter((f) => f.length > 0);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -112,6 +135,16 @@ const ReleaseTable = () => {
               navigate(`/home/triage/${v}`, { replace: true });
             }}
           />
+          {customFilter && (
+            <Button
+              variant="contained"
+              onClick={() => {
+                setFilterDialog(true);
+              }}
+            >
+              Filter
+            </Button>)
+          }
           {/* <Button
             variant="outlined"
             onClick={handleClickOpen}
@@ -144,8 +177,21 @@ const ReleaseTable = () => {
           </Dialog> */}
         </Stack>
         {version !== "none" && (
-          <ReleaseCandidates version={version}></ReleaseCandidates>
+          <ReleaseCandidates version={version} filters={filtersInUse}></ReleaseCandidates>
         )}
+        {customFilter && (
+          <FilterDialog //TODO 
+            open={filterDialog}
+            filters={selectedFilters}
+            onUpdate={(filters) => {
+              setSelectedFilters(selectedFilters.map((f) => filters[f.name]));
+              // setSelectedFilters(filters);
+              setFilterDialog(false);
+            }}
+            onClose={() => {
+              setFilterDialog(false);
+            }}
+          ></FilterDialog>)}
       </Stack>
     </>
   );
