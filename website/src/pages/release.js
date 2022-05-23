@@ -4,8 +4,15 @@ import Paper from "@mui/material/Paper";
 import Layout from "../layout/Layout";
 import ReleaseTable from "../components/release/ReleaseTable";
 import { Filters } from "../components/issues/filter/FilterDialog";
+import Columns from "../components/issues/GridColumns"
+import { useParams } from "react-router-dom";
 
 const Release = () => {
+  const params = useParams();
+  const version = params.version === undefined ? "none" : params.version;
+  const minorVersion = version == "none"?"none": version.split(".").slice(0, 2).join(".");
+
+
   return (
     <Layout>
       <Container maxWidth="xxl" sx={{ mt: 4, mb: 4 }}>
@@ -36,7 +43,31 @@ const Release = () => {
               {
                 ...Filters.severity,
                 data: JSON.parse(JSON.stringify(Filters.severity.data)),
+              }, {
+                ...Filters.createTime,
+                data: {
+                  ...JSON.parse(JSON.stringify(Filters.createTime.data)),
+                },
               },
+              {
+                ...Filters.closeTime,
+                data: {
+                  ...JSON.parse(JSON.stringify(Filters.closeTime.data)),
+                },
+              },
+
+            ]}
+          columns={[
+              ...Columns.issueBasicInfo,
+              Columns.createdTime,
+              Columns.closedTime,
+              Columns.triageStatus,
+              Columns.releaseBlock,
+              Columns.getAffectionOnVersion(minorVersion),
+              Columns.getPROnVersion(minorVersion),
+              Columns.getPickOnVersion(minorVersion),
+              Columns.changed,
+              Columns.comment,
             ]}
           />
         </Paper>

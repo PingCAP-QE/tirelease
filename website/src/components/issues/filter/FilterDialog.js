@@ -242,9 +242,9 @@ const severity = {
   },
   filter: (params, self) => {
     return severityLabels
-    .filter((label) => self.data[label])
-    .map((label) => `severity_labels=severity/${label}`)
-    .join("&").includes(params.severity_label); 
+      .filter((label) => self.data[label])
+      .map((label) => `severity_labels=severity/${label}`)
+      .join("&").includes(params.severity_label);
   }
 };
 
@@ -330,8 +330,10 @@ const createTime = {
     );
   },
   filter: (params, self) => {
-    // TODO 当All Issues页面需要前端筛选时补充该逻辑
-    return true;
+    if (self.data.createTime == null) {
+      return true;
+    }
+    return new Date(params.create_time).getTime() >= self.data.createTime.getTime();
   }
 };
 
@@ -356,8 +358,11 @@ const closeTime = {
     );
   },
   filter: (params, self) => {
-    // TODO 当All Issues页面需要前端筛选时补充该逻辑
-    return true;
+    if (self.data.closeTime == null) {
+      return true;
+    }
+
+    return new Date(params.close_time).getTime() >= self.data.closeTime.getTime();
   }
 };
 
