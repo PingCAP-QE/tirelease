@@ -2,6 +2,13 @@ import PickSelect from "./PickSelect";
 import { getAffection } from "./Affection";
 import { mapPickStatusToFrontend } from "./mapper"
 
+export function getVersionTriageValue(versionTraige) {
+  if (versionTraige === undefined) {
+    return "N/A"
+  }
+  return mapPickStatusToFrontend(versionTraige.triage_result);
+}
+
 export function getPickTriageValue(version) {
   return (params) => {
     const affection = getAffection(version)(params);
@@ -11,16 +18,13 @@ export function getPickTriageValue(version) {
     const version_triage = params.row.version_triages?.filter((t) =>
       t.version_name.startsWith(version)
     )[0];
-    if (version_triage === undefined) {
-      return "N/A"
-    }
-    return mapPickStatusToFrontend(version_triage.triage_result);
+    return getVersionTriageValue(version_triage)
   };
 }
 
 export function renderPickTriage(version) {
   return (params) => {
-    
+
     const affection = getAffection(version)(params);
     if (affection === "N/A" || affection === "no") {
       return <>not affect</>;

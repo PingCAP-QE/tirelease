@@ -13,6 +13,7 @@ import { fetchVersion } from "../fetcher/fetchVersion";
 import DateTimePicker from "@mui/lab/DateTimePicker";
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import LocalizationProvider from "@mui/lab/LocalizationProvider";
+import { getVersionTriageValue } from "../renderer/PickTriage"
 
 export const stringify = (filter) =>
   (filter.stringify || ((filter) => filter))(filter);
@@ -36,7 +37,7 @@ const number = {
     );
   },
   filter: (params, self) => {
-    return params.number == self.data.issueNumber
+    return params.issue.number == self.data.issueNumber
   }
 };
 
@@ -74,7 +75,7 @@ const state = {
   },
   filter: (params, self) => {
     if (self.data.open ^ self.data.closed) {
-      return self.stringify(self).includes(params.state)
+      return self.stringify(self).includes(params.issue.state)
     }
     return true;
   }
@@ -111,7 +112,7 @@ const type = {
   },
   filter: (params, self) => {
     if (self.data.selected !== undefined) {
-      return self.stringify(self).includes(params.type_label)
+      return self.stringify(self).includes(params.issue.type_label)
     }
     return true;
   }
@@ -138,7 +139,7 @@ const title = {
     );
   },
   filter: (params, self) => {
-    return params.title.includes(self.data.title)
+    return params.issue.title.includes(self.data.title)
   }
 };
 
@@ -175,7 +176,7 @@ const repo = {
     if (self.data.selected == undefined) {
       return true
     }
-    return params.repo == self.data.selected
+    return params.issue.repo == self.data.selected
   }
 };
 
@@ -244,7 +245,7 @@ const severity = {
     return severityLabels
       .filter((label) => self.data[label])
       .map((label) => `severity_labels=severity/${label}`)
-      .join("&").includes(params.severity_label);
+      .join("&").includes(params.issue.severity_label);
   }
 };
 
@@ -333,7 +334,7 @@ const createTime = {
     if (self.data.createTime == null) {
       return true;
     }
-    return new Date(params.create_time).getTime() >= self.data.createTime.getTime();
+    return new Date(params.issue.create_time).getTime() >= self.data.createTime.getTime();
   }
 };
 
@@ -362,12 +363,138 @@ const closeTime = {
       return true;
     }
 
-    return new Date(params.close_time).getTime() >= self.data.closeTime.getTime();
+    return new Date(params.issue.close_time).getTime() >= self.data.closeTime.getTime();
+  }
+};
+
+const triageResultLabel = ["approved", "later", "won't fix", "unknown", "approved(frozen)", "N/A"];
+
+const triageResult = {
+  name: "Triage Result",
+  data: {
+    selected: undefined,
+  },
+  stringify: (self) => {
+    if (self.data.selected !== undefined) {
+      return `triage_result=${self.data.selected}`;
+    }
+    return "";
+  },
+  render: ({ data, update }) => {
+    return (
+      <Select
+        fullWidth
+        onChange={(e) => {
+          update({ ...data, selected: e.target.value });
+        }}
+        value={data.selected}
+      >
+        <MenuItem value={undefined}>&nbsp;</MenuItem>
+        {triageResultLabel.map((label) => {
+          if(label == "N/A") {
+            return <MenuItem value={label}>Not Triaged</MenuItem>; 
+          }
+          return <MenuItem value={label}>{label}</MenuItem>;
+        })}
+      </Select>
+    );
+  },
+  filter: (params, self) => {
+    if (self.data.selected == undefined) {
+      return true
+    }
+    const version = params.version_triage.version_name
+    const minorVersion = version.split(".").slice(0, 2).join(".")
+    const version_triage = params.version_triages?.filter((t) =>
+      t.version_name.startsWith(minorVersion)
+    )[0];
+    return getVersionTriageValue(version_triage) == self.data.selected
+  }
+};
+
+const versionTriageStatusLabel = ["need pr", "need approve", "need review", "ci testing", "finished"];
+
+const versionTriageStatus = {
+  name: "Triage Status",
+  data: {
+    need_pr: true,
+    need_approve: true,
+    need_review: true,
+    ci_testing: true,
+    finished: true,
+    // none: true,
+  },
+  stringify: (self) => {
+    if (
+      self.data.need_pr &&
+      self.data.need_approve &&
+      self.data.need_review &&
+      self.data.ci_testing &&
+      self.data.finished
+      // self.data.none
+    ) {
+      // all data
+      return "";
+    }
+    // 目前仅用于VersionTriage页面的前端筛选使用，未与后端联调验证
+    return versionTriageStatusLabel
+      .map((label) => label.replace(" ", "_"))
+      .filter((label) => self.data[label])
+      .map((label) => `version_triage_status=${label}`)
+      .join("&");
+  },
+  render: ({ data, update }) => {
+    return (
+      <FormGroup>
+        <FormControlLabel
+          control={<Checkbox checked={data.need_pr} />}
+          label="need pr"
+          onChange={(e) => {
+            update({ ...data, need_pr: e.target.checked });
+          }}
+        />
+        <FormControlLabel
+          control={<Checkbox checked={data.need_approve} />}
+          label="need approve"
+          onChange={(e) => {
+            update({ ...data, need_approve: e.target.checked });
+          }}
+        />
+        <FormControlLabel
+          control={<Checkbox checked={data.need_review} />}
+          label="need review"
+          onChange={(e) => {
+            update({ ...data, need_review: e.target.checked });
+          }}
+        />
+        <FormControlLabel
+          control={<Checkbox checked={data.ci_testing} />}
+          label="ci testing"
+          onChange={(e) => {
+            update({ ...data, ci_testing: e.target.checked });
+          }}
+        />
+        <FormControlLabel
+          control={<Checkbox checked={data.finished} />}
+          label="finished"
+          onChange={(e) => {
+            update({ ...data, finished: e.target.checked });
+          }}
+        />
+      </FormGroup>
+    );
+  },
+  filter: (params, self) => {
+    return versionTriageStatusLabel
+      .map((label) => label.replace(" ", "_"))
+      .filter((label) => self.data[label])
+      .map((label) => `version_triage_status=${label}`)
+      .join("&").includes(params.version_triage_merge_status.replace(" ", "_"));
   }
 };
 
 
-export const Filters = { number, repo, title, affect, type, state, severity, createTime, closeTime };
+export const Filters = { number, repo, title, affect, type, state, severity, createTime, closeTime, versionTriageStatus, triageResult };
 
 export function FilterDialog({ open, onClose, onUpdate, filters }) {
   const [filterState, setFilterState] = React.useState(
