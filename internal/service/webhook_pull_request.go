@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -142,4 +143,104 @@ func WebHookRefreshPullRequestRefIssue(pr *github.PullRequest) error {
 		}
 	}
 	return nil
+}
+
+func AutoRefreshPrApprovedLabel(pr *github.PullRequest) error {
+	prEntity := entity.ComposePullRequestFromV3(pr)
+
+	// Will not change the label temporaly for the stability
+	// TODO If there is no other way to refresh the need-cherry-pick label, remove below condition
+	if prEntity.CherryPickApproved {
+		return nil
+	}
+	issueNumbers, err := git.ParseIssueNumber(prEntity.Body, prEntity.Owner, prEntity.Repo)
+
+	if err != nil {
+		return err
+	}
+
+	if len(issueNumbers) == 0 {
+		return fmt.Errorf("pullrequest %s does not refer to a issue", prEntity.PullRequestID)
+	}
+
+	// Query issues refered by pullrequest
+	issues := make([]entity.Issue, 0)
+	for _, issueNumber := range issueNumbers {
+		issueDOs, err := repository.SelectIssue(
+			&entity.IssueOption{
+				Number: issueNumber.Number,
+				Owner:  issueNumber.Owner,
+				Repo:   issueNumber.Repo,
+			},
+		)
+		if err != nil {
+			return err
+		}
+		issues = append(issues, *issueDOs...)
+	}
+
+	// Query releaseVersions from pullrequest
+	// At most cases the size of releaseVersions is 1
+	releaseVersions, err := getPrRelatedReleaseVersions(*prEntity)
+	if err != nil {
+		return err
+	}
+
+	hasFrozen, allApproved, err := checkTriageStatus(releaseVersions, issues)
+	if err != nil {
+		return err
+	}
+
+	// Skip below statuses to save brandwith
+	// TODO If the labels need to be consistent with TiRelease, remove the condition
+	if hasFrozen || !allApproved {
+		return nil
+	}
+
+	err = ChangePrApprovedLabel(prEntity.PullRequestID, hasFrozen, allApproved)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Check all triage status of versions and issues to see whether there is frozen or unapproved triage.
+func checkTriageStatus(versions []entity.ReleaseVersion, issues []entity.Issue) (bool, bool, error) {
+	if len(versions) == 0 || len(issues) == 0 {
+		return false, false, nil
+	}
+	hasFrozen := false
+	allApproved := true
+
+	for _, version := range versions {
+		for _, issue := range issues {
+			triages, err := repository.SelectVersionTriage(
+				&entity.VersionTriageOption{
+					IssueID:     issue.IssueID,
+					VersionName: version.Name,
+				})
+
+			if err != nil {
+				return false, false, err
+			}
+
+			// If there is no triage history
+			if len(*triages) == 0 {
+				allApproved = false
+				break
+			} else if len(*triages) > 1 {
+				return false, false, fmt.Errorf("value exception: There are multiple triage infos for version %s, issue %s", version.Name, issue.IssueID)
+			}
+
+			triage := (*triages)[0]
+			if triage.TriageResult == entity.VersionTriageResultAcceptFrozen {
+				hasFrozen = true
+			}
+			if triage.TriageResult != entity.VersionTriageResultAccept {
+				allApproved = false
+			}
+		}
+	}
+
+	return hasFrozen, allApproved, nil
 }

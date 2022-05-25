@@ -60,26 +60,9 @@ func CreateOrUpdateVersionTriageInfo(versionTriage *entity.VersionTriage, update
 	if issueRelationInfo != nil && issueRelationInfo.PullRequests != nil && len(*issueRelationInfo.PullRequests) > 0 {
 		for i := range *issueRelationInfo.PullRequests {
 			pr := (*issueRelationInfo.PullRequests)[i]
-			if !isFrozen && isAccept {
-				err := RemoveLabelByPullRequestID(pr.PullRequestID, git.NotCheryyPickLabel)
-				if err != nil {
-					return nil, err
-				}
-
-				err = AddLabelByPullRequestID(pr.PullRequestID, git.CherryPickLabel)
-				if err != nil {
-					return nil, err
-				}
-			} else {
-				err := RemoveLabelByPullRequestID(pr.PullRequestID, git.CherryPickLabel)
-				if err != nil {
-					return nil, err
-				}
-
-				err = AddLabelByPullRequestID(pr.PullRequestID, git.NotCheryyPickLabel)
-				if err != nil {
-					return nil, err
-				}
+			err := ChangePrApprovedLabel(pr.PullRequestID, isFrozen, isAccept)
+			if err != nil {
+				return nil, err
 			}
 		}
 	}
@@ -95,6 +78,33 @@ func CreateOrUpdateVersionTriageInfo(versionTriage *entity.VersionTriage, update
 
 		IssueRelationInfo: issueRelationInfo,
 	}, nil
+}
+
+// Hook github api to change the `approve` related labels.
+func ChangePrApprovedLabel(prId string, isFrozen, isAccept bool) error {
+	if !isFrozen && isAccept {
+		err := RemoveLabelByPullRequestID(prId, git.NotCheryyPickLabel)
+		if err != nil {
+			return err
+		}
+
+		err = AddLabelByPullRequestID(prId, git.CherryPickLabel)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := RemoveLabelByPullRequestID(prId, git.CherryPickLabel)
+		if err != nil {
+			return err
+		}
+
+		err = AddLabelByPullRequestID(prId, git.NotCheryyPickLabel)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func SelectVersionTriageInfo(query *dto.VersionTriageInfoQuery) (*dto.VersionTriageInfoWrap, *entity.ListResponse, error) {
