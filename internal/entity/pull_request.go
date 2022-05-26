@@ -42,6 +42,7 @@ type PullRequest struct {
 	Labels             *[]github.Label `json:"labels,omitempty" gorm:"-"`
 	Assignees          *[]github.User  `json:"assignees,omitempty" gorm:"-"`
 	RequestedReviewers *[]github.User  `json:"requested_reviewers,omitempty" gorm:"-"`
+	Body               string          `json:"body,omitempty"`
 }
 
 // List Option
@@ -131,6 +132,7 @@ func ComposePullRequestFromV3(pullRequest *github.PullRequest) *PullRequest {
 		Labels:             labels,
 		Assignees:          assignees,
 		RequestedReviewers: requestedReviewers,
+		Body:               *pullRequest.Body,
 	}
 }
 

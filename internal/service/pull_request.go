@@ -1,8 +1,10 @@
 package service
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"tirelease/commons/git"
 	"tirelease/internal/entity"
@@ -121,4 +123,28 @@ func RegexReferenceNumbers(text string) ([]int, error) {
 	}
 
 	return issueNumbers, nil
+}
+
+// Get Pullrequest related release versions by the baseBranch
+func getPrRelatedReleaseVersions(pr entity.PullRequest) ([]entity.ReleaseVersion, error) {
+	// Disclose the whole inside story
+	// If the base branch of pr is not start with "release-" then it will not be triggered
+	if !strings.HasPrefix(pr.BaseBranch, git.ReleaseBranchPrefix) {
+		return nil, fmt.Errorf("pr %s is not checked out from a released branch", pr.PullRequestID)
+	}
+
+	branchVersion := strings.Replace(pr.BaseBranch, git.ReleaseBranchPrefix, "", -1)
+	major, minor, _, _ := ComposeVersionAtom(branchVersion)
+
+	// select all triaged list under this minor version
+	versionOption := &entity.ReleaseVersionOption{
+		Major:     major,
+		Minor:     minor,
+		ShortType: entity.ReleaseVersionShortTypeMinor,
+	}
+	releaseVersions, err := repository.SelectReleaseVersion(versionOption)
+	if err != nil {
+		return nil, err
+	}
+	return *releaseVersions, err
 }

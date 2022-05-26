@@ -63,6 +63,9 @@ func GithubWebhookHandler(c *gin.Context) {
 		}
 		baseBranch := event.PullRequest.Base.Ref
 		if baseBranch != nil && strings.HasPrefix(*baseBranch, git.ReleaseBranchPrefix) {
+			// If the auto refesh operion failed ,just let it go.
+			service.AutoRefreshPrApprovedLabel(event.PullRequest)
+
 			err := service.WebHookRefreshPullRequestRefIssue(event.PullRequest)
 			if err != nil {
 				c.Error(err)
