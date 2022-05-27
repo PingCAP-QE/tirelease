@@ -25,6 +25,10 @@ const Release = () => {
                 data: JSON.parse(JSON.stringify(Filters.repo.data)),
               },
               {
+                ...Filters.components,
+                data: JSON.parse(JSON.stringify(Filters.components.data)),
+              },
+              {
                 ...Filters.number,
                 data: JSON.parse(JSON.stringify(Filters.number.data)),
               },

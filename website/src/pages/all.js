@@ -32,6 +32,7 @@ function Table() {
 
   const columns = [
     Columns.repo,
+    Columns.components,
     Columns.number,
     Columns.title,
     Columns.state,

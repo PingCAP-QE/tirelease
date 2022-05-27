@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"tirelease/commons/git"
+	"tirelease/internal/service/component"
 
 	"github.com/google/go-github/v41/github"
 	"github.com/shurcooL/githubv4"
@@ -34,8 +35,9 @@ type Issue struct {
 	TypeLabel             string `json:"type_label,omitempty"`
 
 	// OutPut-Serial
-	Labels    *[]github.Label `json:"labels,omitempty" gorm:"-"`
-	Assignees *[]github.User  `json:"assignees,omitempty" gorm:"-"`
+	Labels     *[]github.Label       `json:"labels,omitempty" gorm:"-"`
+	Assignees  *[]github.User        `json:"assignees,omitempty" gorm:"-"`
+	Components []component.Component `json:"components,omitempty" gorm:"-"`
 }
 
 // List Option

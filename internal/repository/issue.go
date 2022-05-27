@@ -6,6 +6,7 @@ import (
 
 	"tirelease/commons/database"
 	"tirelease/internal/entity"
+	"tirelease/internal/service/component"
 
 	"github.com/google/go-github/v41/github"
 	"github.com/pkg/errors"
@@ -102,6 +103,7 @@ func serializeIssue(issue *entity.Issue) {
 	}
 }
 
+// TODO Add a layer between repository and the service and move below logic to the layer.
 func unSerializeIssue(issue *entity.Issue) {
 	if issue.AssigneesString != "" {
 		var assignees []github.User
@@ -113,6 +115,7 @@ func unSerializeIssue(issue *entity.Issue) {
 		json.Unmarshal([]byte(issue.LabelsString), &labels)
 		issue.Labels = &labels
 	}
+	issue.Components = component.GetComponents(issue.Owner, issue.Repo, issue.LabelsString)
 }
 
 func IssueWhere(option *entity.IssueOption) string {
