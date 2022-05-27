@@ -52,3 +52,18 @@ func TestComposeVersionTriageUpcomingList(t *testing.T) {
 	assert.Equal(t, true, err == nil)
 	assert.Equal(t, true, len(versionTriages) > 0)
 }
+
+func TestChangePrApprovedLabel(t *testing.T) {
+	t.Skip()
+	database.Connect(generateConfig())
+	git.Connect(git.TestToken)
+	git.ConnectV4(git.TestToken)
+
+	pr, _, err := git.Client.GetPullRequestByNumber("PingCAP-QE", "tirelease", 111)
+	assert.Equal(t, true, err == nil)
+	err = ChangePrApprovedLabel(*pr.NodeID, false, true)
+	assert.Equal(t, true, err == nil)
+
+	err = ChangePrApprovedLabel(*pr.NodeID, true, false)
+	assert.Equal(t, true, err == nil)
+}

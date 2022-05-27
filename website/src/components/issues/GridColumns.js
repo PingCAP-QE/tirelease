@@ -24,6 +24,15 @@ const repo = {
   valueGetter: (params) => params.row.issue.repo,
 };
 
+
+const components = {
+  field: "components",
+  hide: true,
+  headerName: "Components",
+  valueGetter: (params) => params.row.issue.components,
+};
+
+
 const number = {
   field: "number",
   headerName: "Number",
@@ -196,6 +205,7 @@ function getPickOnVersion(version) {
 const Columns = {
   id,
   repo,
+  components,
   number,
   title,
   state,
@@ -213,7 +223,7 @@ const Columns = {
   getAffectionOnVersion,
   getPROnVersion,
   getPickOnVersion,
-  issueBasicInfo: [id, repo, number, title, severity, labels, assignee],
+  issueBasicInfo: [id, repo, components, number, title, severity, labels, assignee],
 };
 
 export default Columns;

@@ -180,6 +180,38 @@ const repo = {
   }
 };
 
+const components = {
+  name: "Components",
+  data: {
+    components: undefined,
+  },
+  stringify: (self) => {
+    if (self.data.components !== undefined) {
+      return `components=${self.data.components}`;
+    }
+    return "";
+  },
+  render: ({ data, update }) => {
+    return (
+      <TextField
+        fullWidth
+        label="Components"
+        placeholder="Component name contains..."
+        value={data.components}
+        onChange={(e) => update({ components: e.target.value })}
+      />
+    );
+  },
+  filter: (params, self) => {
+    if (self.data.components == undefined) {
+      return true
+    }
+    return params.issue.components.includes(self.data.components)
+  }
+};
+
+
+
 const severityLabels = ["critical", "major", "moderate", "minor"];
 
 const severity = {
@@ -391,8 +423,8 @@ const triageResult = {
       >
         <MenuItem value={undefined}>&nbsp;</MenuItem>
         {triageResultLabel.map((label) => {
-          if(label == "N/A") {
-            return <MenuItem value={label}>Not Triaged</MenuItem>; 
+          if (label == "N/A") {
+            return <MenuItem value={label}>Not Triaged</MenuItem>;
           }
           return <MenuItem value={label}>{label}</MenuItem>;
         })}
@@ -494,7 +526,7 @@ const versionTriageStatus = {
 };
 
 
-export const Filters = { number, repo, title, affect, type, state, severity, createTime, closeTime, versionTriageStatus, triageResult };
+export const Filters = { number, repo, title, affect, type, state, severity, createTime, closeTime, versionTriageStatus, triageResult, components };
 
 export function FilterDialog({ open, onClose, onUpdate, filters }) {
   const [filterState, setFilterState] = React.useState(
