@@ -110,15 +110,6 @@ func ReleaseVersionWhere(option *entity.ReleaseVersionOption) string {
 	if option.Name != "" {
 		sql += " and release_version.name = @Name"
 	}
-	// if option.Major != 0 {
-	// 	sql += " and release_version.major = @Major"
-	// }
-	// if option.Minor != 0 {
-	// 	sql += " and release_version.minor = @Minor"
-	// }
-	// if option.Patch != 0 {
-	// 	sql += " and release_version.patch = @Patch"
-	// }
 	if option.ShortType != "" {
 		if option.ShortType == entity.ReleaseVersionShortTypePatch {
 			sql += " and release_version.major = @Major"
@@ -131,6 +122,16 @@ func ReleaseVersionWhere(option *entity.ReleaseVersionOption) string {
 		}
 		if option.ShortType == entity.ReleaseVersionShortTypeMajor {
 			sql += " and release_version.major = @Major"
+		}
+	} else {
+		if option.Major != 0 {
+			sql += " and release_version.major = @Major"
+		}
+		if option.Minor != 0 {
+			sql += " and release_version.minor = @Minor"
+		}
+		if option.Patch != 0 {
+			sql += " and release_version.patch = @Patch"
 		}
 	}
 	if option.Addition != "" {
