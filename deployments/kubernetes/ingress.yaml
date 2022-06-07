@@ -2,7 +2,7 @@
 # Doc: https://kubernetes.io/docs/concepts/services-networking/ingress/#the-ingress-resource
 # apiVersion example: https://yano3.hatenablog.jp/entry/2021/05/10/202814
 
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: tirelease
