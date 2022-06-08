@@ -15,7 +15,9 @@ spec:
       http: # 创建HTTP协议的访问
         paths:
           - path: / # 通过/路径就可以访问该服务(all paths match)
-            # pathType: Prefix # 以<path>分隔的URL路径前缀匹配,匹配对大小写敏感
+            pathType: Prefix # 以<path>分隔的URL路径前缀匹配,匹配对大小写敏感
             backend:  # 后端service的名称及端口号
-              serviceName: tirelease
-              servicePort: 80
+              service:
+                name: tirelease
+                port: 
+                  number: 80
