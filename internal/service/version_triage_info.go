@@ -119,7 +119,7 @@ func SelectVersionTriageInfo(query *dto.VersionTriageInfoQuery) (*dto.VersionTri
 
 	// compose
 	var versionTriages []entity.VersionTriage
-	if releaseVersion.Status == entity.ReleaseVersionStatusUpcoming {
+	if releaseVersion.Status == entity.ReleaseVersionStatusUpcoming || releaseVersion.Status == entity.ReleaseVersionStatusFrozen {
 		versionTriages, err = ComposeVersionTriageUpcomingList(query.Version)
 		if err != nil {
 			return nil, nil, err
