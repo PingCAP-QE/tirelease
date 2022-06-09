@@ -15,7 +15,8 @@ export function mapPickStatusToFrontend(pick) {
         unknown: "unknown",
         later: "later",
         "won't fix": "won't fix",
-        "accept(frozen)": "approved(frozen)"
+        "accept(frozen)": "approved(frozen)",
+        "released": "released"
     }[pick]
     return pick
 }
