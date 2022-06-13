@@ -18,6 +18,9 @@ type VersionTriage struct {
 	DueTime             *time.Time                `json:"due_time,omitempty"`
 	Comment             string                    `json:"comment,omitempty"`
 	ChangedItem         VersionTriageChangedItem  `json:"changed_item,omitempty"`
+
+	// TODO: temporaly maintain the merge status in the DO until there is isolated model in the service layer and the controller layer
+	MergeStatus VersionTriageMergeStatus `gorm:"-" json:"merge_status,omitempty"`
 }
 
 // Enum type

@@ -14,6 +14,13 @@ import (
 
 // ============================================================================
 // ============================================================================ CURD Of IssueRelationInfo
+// Get relation infomations of target issue
+// relation infomations include:
+// 		1. Issue : Issue basic info
+// 		2. IssueAffects : The minor versions affected by the issue
+// 		3. IssuePrRelations : The pull requests related to the issue **regardless of the version**
+// 		4. PullRequests	: The pull requests related to the issue **in the version**
+// 		5. VersionTriage : The version triage history of the issue
 func SelectIssueRelationInfo(option *dto.IssueRelationInfoQuery) (*[]dto.IssueRelationInfo, *entity.ListResponse, error) {
 	// select join
 	joins, err := repository.SelectIssueRelationInfoByJoin(option)
