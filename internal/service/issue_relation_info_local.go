@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"tirelease/commons/git"
 	"tirelease/internal/dto"
 	"tirelease/internal/entity"
 	"tirelease/internal/repository"
@@ -64,20 +65,24 @@ func FindIssueRelationInfo(option *dto.IssueRelationInfoQuery) (*[]dto.IssueRela
 		return nil, nil, err
 	}
 
-	// Get pullrequests whose base branch is the same as the issue
-	pullRequestAll, err := getPullRequests(issuePrRelationAll, option.BaseBranch)
+	// Get pullrequests whose base branch **regardless** of the version**
+	// option.baseBranch
+	pullRequestAll, err := getRelatedPullRequests(issuePrRelationAll)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	// TODO: issue relation info
+	// Get pullrequests whose base branch **in the version**
+	versionPRs := getSameVersionPullRequests(pullRequestAll, option.BaseBranch)
+
 	versionTriageAll, err := getVersionTriages(issueIDs, option.VersionStatus)
 	if err != nil {
 		return nil, nil, err
 	}
+	versionTriageAll = appendVersionTriageMergeStatus(versionTriageAll, pullRequestAll, issuePrRelationAll)
 
 	// compose
-	issueRelationInfos := composeIssueRelationInfos(issueAll, issueAffectAll, issuePrRelationAll, pullRequestAll, versionTriageAll)
+	issueRelationInfos := composeIssueRelationInfos(issueAll, issueAffectAll, issuePrRelationAll, versionPRs, versionTriageAll)
 
 	return &issueRelationInfos, response, nil
 }
@@ -279,7 +284,7 @@ func getIssuePrRelation(issueIDs []string) ([]entity.IssuePrRelation, error) {
 	return issuePrRelationAll, nil
 }
 
-func getPullRequests(relatedPrs []entity.IssuePrRelation, baseBranch string) ([]entity.PullRequest, error) {
+func getRelatedPullRequests(relatedPrs []entity.IssuePrRelation) ([]entity.PullRequest, error) {
 	pullRequestIDs := make([]string, 0)
 	pullRequestAll := make([]entity.PullRequest, 0)
 
@@ -291,9 +296,6 @@ func getPullRequests(relatedPrs []entity.IssuePrRelation, baseBranch string) ([]
 		pullRequestOption := &entity.PullRequestOption{
 			PullRequestIDs: pullRequestIDs,
 		}
-		if baseBranch != "" {
-			pullRequestOption.BaseBranch = baseBranch
-		}
 		pullRequestAlls, err := repository.SelectPullRequest(pullRequestOption)
 		if nil != err {
 			return nil, err
@@ -302,6 +304,27 @@ func getPullRequests(relatedPrs []entity.IssuePrRelation, baseBranch string) ([]
 	}
 
 	return pullRequestAll, nil
+}
+
+func getSameVersionPullRequests(pullRequestAll []entity.PullRequest, baseBranch string) []entity.PullRequest {
+	if baseBranch == "" {
+		return pullRequestAll
+	}
+
+	pullRequests := make([]entity.PullRequest, 0)
+
+	if len(pullRequestAll) == 0 {
+		return pullRequests
+	}
+
+	for i := range pullRequestAll {
+		pullRequest := pullRequestAll[i]
+		if pullRequest.BaseBranch == baseBranch {
+			pullRequests = append(pullRequests, pullRequest)
+		}
+	}
+
+	return pullRequests
 }
 
 func getVersionTriages(issueIDs []string, versionStatus entity.ReleaseVersionStatus) ([]entity.VersionTriage, error) {
@@ -346,12 +369,42 @@ func pickUpcomingTriages(triages *[]entity.VersionTriage) (*[]entity.VersionTria
 	return &upcomingTriages, nil
 }
 
-// func appendVersionTriageMergeStatu(triage *entity.VersionTriage) (*entity.VersionTriage, error) {
-// 	// batch select all issue relation info
-// 	issueIDs := make([]string, 0)
-// 	for i := range *joins {
-// 		join := (*joins)[i]
-// 		issueIDs = append(issueIDs, join.IssueID)
-// 	}
+func appendVersionTriageMergeStatus(versionTriages []entity.VersionTriage, pullrequestAll []entity.PullRequest, issuePrRelations []entity.IssuePrRelation) []entity.VersionTriage {
+	triages := make([]entity.VersionTriage, 0)
+	if len(versionTriages) == 0 {
+		return triages
+	}
 
-// }
+	for i := range versionTriages {
+		versionTriage := versionTriages[i]
+		prIDs := make([]string, 0)
+
+		for _, relation := range issuePrRelations {
+			if relation.IssueID == versionTriage.IssueID {
+				prIDs = append(prIDs, relation.PullRequestID)
+			}
+		}
+
+		major, minor, _, _ := ComposeVersionAtom(versionTriage.VersionName)
+		minorVersion := fmt.Sprintf("%d.%d", major, minor)
+		baseBranch := git.ReleaseBranchPrefix + minorVersion
+
+		prs := make([]entity.PullRequest, 0)
+		for _, pr := range pullrequestAll {
+			if pr.BaseBranch != baseBranch {
+				continue
+			}
+
+			for _, prID := range prIDs {
+				if prID == pr.PullRequestID {
+					prs = append(prs, pr)
+				}
+			}
+		}
+
+		versionTriage.MergeStatus = ComposeVersionTriageMergeStatus(prs)
+		triages = append(triages, versionTriage)
+	}
+
+	return triages
+}

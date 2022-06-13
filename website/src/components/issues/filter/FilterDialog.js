@@ -208,8 +208,6 @@ const components = {
   }
 };
 
-
-
 const severityLabels = ["critical", "major", "moderate", "minor"];
 
 const severity = {
