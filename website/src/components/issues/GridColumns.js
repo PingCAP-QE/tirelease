@@ -37,7 +37,7 @@ const number = {
   field: "number",
   headerName: "Number",
   type: "number",
-  valueGetter: (params) => params.row.issue.number,
+  valueGetter: (params) => ( params.row.issue.number+"("+params.row.issue.html_url+")"),
   renderCell: (params) => (
     <a
       href={params.row.issue.html_url}
