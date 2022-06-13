@@ -20,7 +20,12 @@ import (
 // 		2. IssueAffects : The minor versions affected by the issue
 // 		3. IssuePrRelations : The pull requests related to the issue **regardless** of the version**
 // 		4. PullRequests	: The pull requests related to the issue **in the version**
-// 		5. VersionTriage : The version triage history of the issue
+// 		5. VersionTriages : The version triage history of the issue
+// ============================================================================
+// TODO: Decouple the infos of current version from the infos of all versions
+//     meta: Issue
+//     current version infos: PullRequests
+//	   all issue info：IssueAffects, IssuePrRelations, VersionTriages
 func FindIssueRelationInfo(option *dto.IssueRelationInfoQuery) (*[]dto.IssueRelationInfo, *entity.ListResponse, error) {
 	// select join
 	joins, err := repository.SelectIssueRelationInfoByJoin(option)
@@ -65,6 +70,7 @@ func FindIssueRelationInfo(option *dto.IssueRelationInfoQuery) (*[]dto.IssueRela
 		return nil, nil, err
 	}
 
+	// TODO: issue relation info
 	versionTriageAll, err := getVersionTriages(issueIDs, option.VersionStatus)
 	if err != nil {
 		return nil, nil, err
@@ -340,12 +346,12 @@ func pickUpcomingTriages(triages *[]entity.VersionTriage) (*[]entity.VersionTria
 	return &upcomingTriages, nil
 }
 
-func appendVersionTriageMergeStatu(triage *entity.VersionTriage) (*entity.VersionTriage, error) {
-	// batch select all issue relation info
-	issueIDs := make([]string, 0)
-	for i := range *joins {
-		join := (*joins)[i]
-		issueIDs = append(issueIDs, join.IssueID)
-	}
+// func appendVersionTriageMergeStatu(triage *entity.VersionTriage) (*entity.VersionTriage, error) {
+// 	// batch select all issue relation info
+// 	issueIDs := make([]string, 0)
+// 	for i := range *joins {
+// 		join := (*joins)[i]
+// 		issueIDs = append(issueIDs, join.IssueID)
+// 	}
 
-}
+// }

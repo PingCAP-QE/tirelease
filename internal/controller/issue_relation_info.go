@@ -27,6 +27,7 @@ func SelectIssueRelationInfos(c *gin.Context) {
 	}
 	option.ParamFill()
 	// 在issue视角下筛选version时，只选择upcoming状态的version作为minor版本的标准
+	// TODO: Move the logic to front end.
 	option.VersionStatus = entity.ReleaseVersionStatusUpcoming
 
 	// Action

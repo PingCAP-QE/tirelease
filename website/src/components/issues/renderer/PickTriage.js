@@ -15,7 +15,9 @@ export function getPickTriageValue(version) {
     if (affection === "N/A" || affection === "no") {
       return <>not affect</>;
     }
-    const version_triage = params.row.version_triages?.filter((t) =>
+    // When there is exact version_triage info, pick it
+    // otherwise pick the version triage info in the version_triages
+    const version_triage = params.row.version_triage?params.row.version_triage:params.row.version_triages?.filter((t) =>
       t.version_name.startsWith(version)
     )[0];
     return getVersionTriageValue(version_triage)

@@ -10,7 +10,6 @@ import { useQuery, useQueryClient } from "react-query";
 import { IssueGrid } from "../components/issues/IssueGrid";
 import Columns from "../components/issues/GridColumns";
 import { fetchVersion } from "../components/issues/fetcher/fetchVersion";
-import { fetchIssue } from "../components/issues/fetcher/fetchIssue";
 import { Filters } from "../components/issues/filter/FilterDialog";
 
 function Table() {

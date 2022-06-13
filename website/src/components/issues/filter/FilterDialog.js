@@ -2,14 +2,12 @@ import * as React from "react";
 import { Checkbox, Dialog, MenuItem, TextField } from "@mui/material";
 import Button from "@mui/material/Button";
 import DialogActions from "@mui/material/DialogActions";
-import { useQuery } from "react-query";
 
 import { Stack, Table, TableBody, TableCell, TableRow } from "@mui/material";
 import TiDialogTitle from "../../common/TiDialogTitle";
 import Select from "@mui/material/Select";
 import FormGroup from "@mui/material/FormGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
-import { fetchVersion } from "../fetcher/fetchVersion";
 import DateTimePicker from "@mui/lab/DateTimePicker";
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import LocalizationProvider from "@mui/lab/LocalizationProvider";
