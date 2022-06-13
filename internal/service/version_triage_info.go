@@ -146,7 +146,7 @@ func SelectVersionTriageInfo(query *dto.VersionTriageInfoQuery) (*dto.VersionTri
 			},
 			BaseBranch: releaseVersion.ReleaseBranch,
 		}
-		issueRelationInfos, _, err := SelectIssueRelationInfo(infoOption)
+		issueRelationInfos, _, err := FindIssueRelationInfo(infoOption)
 		if err != nil {
 			return nil, nil, err
 		}

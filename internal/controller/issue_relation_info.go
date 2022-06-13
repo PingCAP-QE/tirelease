@@ -30,7 +30,7 @@ func SelectIssueRelationInfos(c *gin.Context) {
 	option.VersionStatus = entity.ReleaseVersionStatusUpcoming
 
 	// Action
-	issueRelationInfos, response, err := service.SelectIssueRelationInfo(&option)
+	issueRelationInfos, response, err := service.FindIssueRelationInfo(&option)
 	if err != nil {
 		c.Error(err)
 		return
