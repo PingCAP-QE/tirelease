@@ -18,10 +18,19 @@ export function renderAffection(version) {
     const affection = getAffection(version)(params);
 
     const onChange = (value) => {
-      if (params.row.issue_affects) {
-        params.row.issue_affects.filter(          
-          (affects) => affects.affect_version === version
-        )[0].affect_result = {"yes": "Yes" ,"no": "No" , "unknown":"UnKnown"}[value]; 
+      value = {"yes": "Yes" ,"no": "No" , "unknown":"UnKnown"}[value]; 
+      const tmpAffect = getAffection(version)(params);
+      if (tmpAffect == "N/A") {
+        params.row.issue_affects.push({
+          affect_result: value,
+          affect_version: version
+        })
+      } else {
+        if (params.row.issue_affects) {
+          params.row.issue_affects.filter(          
+            (affects) => affects.affect_version === version
+          )[0].affect_result = value; 
+        }
       }
     }
 
