@@ -1,6 +1,7 @@
 import PickSelect from "./PickSelect";
+import * as React from "react";
 import { getAffection } from "./Affection";
-import { mapPickStatusToFrontend } from "./mapper"
+import { mapPickStatusToBackend, mapPickStatusToFrontend } from "./mapper"
 
 export function getVersionTriageValue(versionTraige) {
   if (versionTraige === undefined) {
@@ -35,6 +36,14 @@ export function renderPickTriage(version) {
     const pick = version_triage === undefined ? "N/A" : mapPickStatusToFrontend(version_triage.triage_result);
     const patch = version_triage === undefined ? "N/A" : version_triage.version_name;
 
+    const onChange = (value) => {
+      if (params.row.version_triages) {
+        params.row.version_triages.filter((t) =>
+            t.version_name.startsWith(version)
+        )[0].triage_result = mapPickStatusToBackend(value); 
+      }
+    }
+
     return (
       <>
         <PickSelect
@@ -42,6 +51,7 @@ export function renderPickTriage(version) {
           version={version}
           patch={patch}
           pick={pick}
+          onChange={onChange}
         ></PickSelect>
       </>
     );
