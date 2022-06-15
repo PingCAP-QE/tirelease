@@ -37,10 +37,18 @@ export function renderPickTriage(version) {
     const patch = version_triage === undefined ? "N/A" : version_triage.version_name;
 
     const onChange = (value) => {
-      if (params.row.version_triages) {
-        params.row.version_triages.filter((t) =>
-            t.version_name.startsWith(version)
-        )[0].triage_result = mapPickStatusToBackend(value); 
+      value = mapPickStatusToBackend(value);
+      if (pick == "N/A") {
+        params.row.version_triages.push({
+          version_name: version,
+          triage_result: value,
+        })
+      } else  {
+        if ((params.row.version_triages)) {
+          params.row.version_triages.filter((t) =>
+              t.version_name.startsWith(version)
+          )[0].triage_result = value
+        }
       }
     }
 
