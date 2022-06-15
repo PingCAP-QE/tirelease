@@ -238,6 +238,10 @@ func InheritVersionTriage(fromVersion string, toVersion string) error {
 	// Migrate
 	for i := range *versionTriages {
 		versionTriage := (*versionTriages)[i]
+		// 1. 根据 triage_result + status(finished) 决定是否迁移以及当前版本状态变更；
+		// 2. 当前版本triage列表更新 、 下个版本新纪录继承，独立更新逻辑；
+		// 3. TriageResult = Later 当前继承逻辑是错误的，应该还是 Later （或空——后台存空不知道是否有问题）；
+		// 4. approve的，但是最后没有finished，它可能是因为还没有pr就approve了：前端加一个限制，没pr不approve，approve提示需关联pr；或者后端在pr hook的时候同时判断upcoming的版本的version_triage approve状态。
 		switch versionTriage.TriageResult {
 		case entity.VersionTriageResultAccept:
 			versionTriage.TriageResult = entity.VersionTriageResultReleased
