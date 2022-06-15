@@ -36,7 +36,7 @@ const components = {
 const number = {
   field: "number",
   headerName: "Number",
-  type: "number",
+  type: "string",
   valueGetter: (params) => ( params.row.issue.number+"("+params.row.issue.html_url+")"),
   renderCell: (params) => (
     <a
@@ -53,6 +53,7 @@ const number = {
     </a>
   ),
 };
+
 
 const title = {
   field: "title",
@@ -213,8 +214,12 @@ function getFixedInLowerVersion(version) {
     valueGetter:
       (params) => {
           let fixVersions = params.row.version_triages.filter(
-            (f) => f.version_name < version && f.merge_status == "finished")
-          return [...new Set(fixVersions.map((f) => f.version_name.split(".").slice(0,2).join(".")))].join(",")
+            (f) => f.version_name < version && f.merge_status == "finished");
+          return [...new Set(fixVersions.map((f) => f.version_name.split(".").slice(0,2).join(".")))].sort(
+              function compareFn(a, b) { 
+                return a < b ? 1 : -1;
+              }
+            ).join(", ")
       }
     ,
     renderCell: 
@@ -227,7 +232,11 @@ function getFixedInLowerVersion(version) {
                 [...new Set(fixVersions.map(
                 (f) => 
                   (f.version_name.split(".").slice(0,2).join(".") ) 
-                ))].join(",")
+                ))].sort(
+                  function compareFn(a, b) { 
+                    return a < b ? 1 : -1;
+                  }
+                ).join(", ")
               }
             </> 
         )

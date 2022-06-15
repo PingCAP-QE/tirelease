@@ -142,16 +142,6 @@ func SaveIssueRelationInfo(issueRelationInfo *dto.IssueRelationInfo) error {
 	return nil
 }
 
-func containVersion(versions *[]entity.ReleaseVersion, name string) bool {
-	for _, version := range *versions {
-		if version.Name == name {
-			return true
-		}
-	}
-
-	return false
-}
-
 func composeIssueRelationInfos(issueAll []entity.Issue, issueAffectAll []entity.IssueAffect,
 	issuePrRelationAll []entity.IssuePrRelation, pullRequestAll []entity.PullRequest,
 	versionTriageAll []entity.VersionTriage) []dto.IssueRelationInfo {
@@ -335,9 +325,6 @@ func getVersionTriages(issueIDs []string, versionStatus entity.ReleaseVersionSta
 			IssueIDs: issueIDs,
 		}
 		versionTriageAlls, err := repository.SelectVersionTriage(versionTriageOption)
-		if nil == err && versionStatus == entity.ReleaseVersionStatusUpcoming {
-			versionTriageAlls, err = pickUpcomingTriages(versionTriageAlls)
-		}
 		if nil != err {
 			return nil, err
 		}
@@ -346,28 +333,6 @@ func getVersionTriages(issueIDs []string, versionStatus entity.ReleaseVersionSta
 	}
 
 	return versionTriageAll, nil
-}
-
-// 只选择对应version状态为“upcoming”的versionTriage
-// 由于upcoming状态的version数据量小，因此在查询时不对versionName进行限制
-func pickUpcomingTriages(triages *[]entity.VersionTriage) (*[]entity.VersionTriage, error) {
-	versionOption := &entity.ReleaseVersionOption{Status: entity.ReleaseVersionStatusUpcoming}
-	upcomingVersions, err := repository.SelectReleaseVersion(versionOption)
-
-	if err != nil {
-		return nil, err
-	}
-
-	upcomingTriages := make([]entity.VersionTriage, 0)
-
-	for i := range *triages {
-		triage := (*triages)[i]
-		if containVersion(upcomingVersions, triage.VersionName) {
-			upcomingTriages = append(upcomingTriages, triage)
-		}
-	}
-
-	return &upcomingTriages, nil
 }
 
 func appendVersionTriageMergeStatus(versionTriages []entity.VersionTriage, pullrequestAll []entity.PullRequest, issuePrRelations []entity.IssuePrRelation) []entity.VersionTriage {

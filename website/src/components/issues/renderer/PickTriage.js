@@ -1,6 +1,7 @@
 import PickSelect from "./PickSelect";
+import * as React from "react";
 import { getAffection } from "./Affection";
-import { mapPickStatusToFrontend } from "./mapper"
+import { mapPickStatusToBackend, mapPickStatusToFrontend } from "./mapper"
 
 export function getVersionTriageValue(versionTraige) {
   if (versionTraige === undefined) {
@@ -19,6 +20,10 @@ export function getPickTriageValue(version) {
     // otherwise pick the version triage info in the version_triages
     const version_triage = params.row.version_triage?params.row.version_triage:params.row.version_triages?.filter((t) =>
       t.version_name.startsWith(version)
+    ).sort(
+      function compareFn(a, b) { 
+        return a.version_name < b.version_name ? 1 : -1;
+      }
     )[0];
     return getVersionTriageValue(version_triage)
   };
@@ -33,9 +38,34 @@ export function renderPickTriage(version) {
     }
     let version_triage = params.row.version_triages?.filter((t) =>
       t.version_name.startsWith(version)
+    ).sort(
+      function compareFn(a, b) { 
+        return a.version_name < b.version_name ? 1 : -1;
+      }
     )[0];
+
     const pick = version_triage === undefined ? "N/A" : mapPickStatusToFrontend(version_triage.triage_result);
     const patch = version_triage === undefined ? "N/A" : version_triage.version_name;
+
+    const onChange = (value) => {
+      value = mapPickStatusToBackend(value);
+      if (pick == "N/A") {
+        params.row.version_triages.push({
+          version_name: version,
+          triage_result: value,
+        })
+      } else  {
+        if ((params.row.version_triages)) {
+          params.row.version_triages.filter((t) =>
+              t.version_name.startsWith(version)
+          ).sort(
+            function compareFn(a, b) { 
+              return a.version_name < b.version_name ? 1 : -1;
+            }
+          )[0].triage_result = value
+        }
+      }
+    }
 
     return (
       <>
@@ -44,6 +74,7 @@ export function renderPickTriage(version) {
           version={version}
           patch={patch}
           pick={pick}
+          onChange={onChange}
         ></PickSelect>
       </>
     );
