@@ -78,6 +78,7 @@ const Release = () => {
               Columns.getAffectionOnVersion(minorVersion),
               Columns.getPROnVersion(minorVersion),
               Columns.getPickOnVersion(minorVersion),
+              Columns.getFixedInLowerVersion(minorVersion),
               Columns.changed,
               Columns.comment,
             ]}

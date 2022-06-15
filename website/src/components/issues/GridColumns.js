@@ -173,6 +173,8 @@ const changed = {
   renderCell: renderChanged,
 };
 
+
+
 function getAffectionOnVersion(version) {
   return {
     field: "affect_" + version,
@@ -202,6 +204,38 @@ function getPickOnVersion(version) {
   };
 }
 
+function getFixedInLowerVersion(version) {
+  return {
+    field: "fixed_version",
+    headerName: "Fixed Lower Version",
+    hide: true,
+    width: 160,
+    valueGetter:
+      (params) => {
+          let fixVersions = params.row.version_triages.filter(
+            (f) => f.version_name < version && f.merge_status == "finished")
+          return [...new Set(fixVersions.map((f) => f.version_name.split(".").slice(0,2).join(".")))].join(",")
+      }
+    ,
+    renderCell: 
+       (params) => {
+          let fixVersions = params.row.version_triages.filter(
+            (f) => f.version_name < version && f.merge_status == "finished");
+          return (
+            <>
+              {
+                [...new Set(fixVersions.map(
+                (f) => 
+                  (f.version_name.split(".").slice(0,2).join(".") ) 
+                ))].join(",")
+              }
+            </> 
+        )
+      
+    }
+  }
+}
+
 const Columns = {
   id,
   repo,
@@ -223,6 +257,7 @@ const Columns = {
   getAffectionOnVersion,
   getPROnVersion,
   getPickOnVersion,
+  getFixedInLowerVersion,
   issueBasicInfo: [id, repo, components, number, title, severity, labels, assignee],
 };
 

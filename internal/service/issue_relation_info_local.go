@@ -79,6 +79,7 @@ func FindIssueRelationInfo(option *dto.IssueRelationInfoQuery) (*[]dto.IssueRela
 	if err != nil {
 		return nil, nil, err
 	}
+	// Get all version-triage-merge-status histories of the issue
 	versionTriageAll = appendVersionTriageMergeStatus(versionTriageAll, pullRequestAll, issuePrRelationAll)
 
 	// compose
