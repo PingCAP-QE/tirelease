@@ -36,7 +36,7 @@ const components = {
 const number = {
   field: "number",
   headerName: "Number",
-  type: "number",
+  type: "string",
   valueGetter: (params) => ( params.row.issue.number+"("+params.row.issue.html_url+")"),
   renderCell: (params) => (
     <a
@@ -53,6 +53,7 @@ const number = {
     </a>
   ),
 };
+
 
 const title = {
   field: "title",
