@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"tirelease/internal/dto"
-	"tirelease/internal/entity"
 	"tirelease/internal/service"
 
 	"github.com/gin-gonic/gin"
@@ -26,8 +25,6 @@ func SelectIssueRelationInfos(c *gin.Context) {
 		option.PerPage = 10
 	}
 	option.ParamFill()
-	// 在issue视角下筛选version时，只选择upcoming状态的version作为minor版本的标准
-	option.VersionStatus = entity.ReleaseVersionStatusUpcoming
 
 	// Action
 	issueRelationInfos, response, err := service.SelectIssueRelationInfo(&option)

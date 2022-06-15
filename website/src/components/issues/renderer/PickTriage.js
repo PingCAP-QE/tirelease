@@ -16,8 +16,13 @@ export function getPickTriageValue(version) {
     if (affection === "N/A" || affection === "no") {
       return <>not affect</>;
     }
+
     const version_triage = params.row.version_triages?.filter((t) =>
       t.version_name.startsWith(version)
+    ).sort(
+      function compareFn(a, b) { 
+        return a.version_name < b.version_name ? 1 : -1;
+      }
     )[0];
     return getVersionTriageValue(version_triage)
   };
@@ -32,7 +37,12 @@ export function renderPickTriage(version) {
     }
     let version_triage = params.row.version_triages?.filter((t) =>
       t.version_name.startsWith(version)
+    ).sort(
+      function compareFn(a, b) { 
+        return a.version_name < b.version_name ? 1 : -1;
+      }
     )[0];
+
     const pick = version_triage === undefined ? "N/A" : mapPickStatusToFrontend(version_triage.triage_result);
     const patch = version_triage === undefined ? "N/A" : version_triage.version_name;
 
@@ -47,6 +57,10 @@ export function renderPickTriage(version) {
         if ((params.row.version_triages)) {
           params.row.version_triages.filter((t) =>
               t.version_name.startsWith(version)
+          ).sort(
+            function compareFn(a, b) { 
+              return a.version_name < b.version_name ? 1 : -1;
+            }
           )[0].triage_result = value
         }
       }
