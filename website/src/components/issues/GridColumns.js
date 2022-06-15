@@ -37,7 +37,7 @@ const number = {
   field: "number",
   headerName: "Number",
   type: "number",
-  valueGetter: (params) => ( params.row.issue.number+"("+params.row.issue.html_url+")"),
+  valueGetter: (params) => params.row.issue.number,
   renderCell: (params) => (
     <a
       href={params.row.issue.html_url}
@@ -52,6 +52,14 @@ const number = {
       {params.row.issue.number}
     </a>
   ),
+};
+
+const issueUrl = {
+  field: "url",
+  headerName: "Issue Url",
+  type: "string",
+  hide: true,
+  valueGetter: (params) => ( params.row.issue.html_url),
 };
 
 const title = {
@@ -207,6 +215,7 @@ const Columns = {
   repo,
   components,
   number,
+  issueUrl,
   title,
   state,
   createdTime,
@@ -223,7 +232,7 @@ const Columns = {
   getAffectionOnVersion,
   getPROnVersion,
   getPickOnVersion,
-  issueBasicInfo: [id, repo, components, number, title, severity, labels, assignee],
+  issueBasicInfo: [id, repo, components, number, issueUrl, title, severity, labels, assignee],
 };
 
 export default Columns;

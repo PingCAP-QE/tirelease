@@ -34,6 +34,7 @@ function Table() {
     Columns.repo,
     Columns.components,
     Columns.number,
+    Columns.issueUrl,
     Columns.title,
     Columns.state,
     Columns.createdTime,
