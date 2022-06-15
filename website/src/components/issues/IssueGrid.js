@@ -107,10 +107,10 @@ export function IssueGrid({
           components={{ Toolbar: GridToolbar }}
           paginationMode={"server"}
           rowCount={rowCount}
-          page={currentPage}
+          page={currentPage - 1}
           pageSize={rowsPerPage}
           onPageChange={(page, details) => {
-            setCurrentPage(page);
+            setCurrentPage(page + 1);
           }}
           onPageSizeChange={(pageSize, details) => {
             setRowsPerPage(pageSize);
