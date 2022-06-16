@@ -12,7 +12,6 @@ const Release = () => {
   const version = params.version === undefined ? "none" : params.version;
   const minorVersion = version == "none" ? "none" : version.split(".").slice(0, 2).join(".");
 
-
   return (
     <Layout>
       <Container maxWidth="xxl" sx={{ mt: 4, mb: 4 }}>
@@ -75,9 +74,11 @@ const Release = () => {
               Columns.closedTime,
               Columns.triageStatus,
               Columns.releaseBlock,
+              // Version triage is towards the minor version.
               Columns.getAffectionOnVersion(minorVersion),
               Columns.getPROnVersion(minorVersion),
               Columns.getPickOnVersion(minorVersion),
+              Columns.getFixedInLowerVersion(minorVersion),
               Columns.changed,
               Columns.comment,
             ]}

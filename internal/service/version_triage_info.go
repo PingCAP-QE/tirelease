@@ -74,7 +74,7 @@ func CreateOrUpdateVersionTriageInfo(versionTriage *entity.VersionTriage, update
 		IsAccept:       isAccept,
 
 		VersionTriage:            versionTriage,
-		VersionTriageMergeStatus: ComposeVersionTriageMergeStatus(issueRelationInfo),
+		VersionTriageMergeStatus: ComposeVersionTriageMergeStatus(*issueRelationInfo.PullRequests),
 
 		IssueRelationInfo: issueRelationInfo,
 	}, nil
@@ -146,7 +146,7 @@ func SelectVersionTriageInfo(query *dto.VersionTriageInfoQuery) (*dto.VersionTri
 			},
 			BaseBranch: releaseVersion.ReleaseBranch,
 		}
-		issueRelationInfos, _, err := SelectIssueRelationInfo(infoOption)
+		issueRelationInfos, _, err := FindIssueRelationInfo(infoOption)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -162,7 +162,7 @@ func SelectVersionTriageInfo(query *dto.VersionTriageInfoQuery) (*dto.VersionTri
 				issueRelationInfo := (*issueRelationInfos)[j]
 				if issueRelationInfo.Issue.IssueID == versionTriage.IssueID {
 					versionTriageInfo.IssueRelationInfo = &issueRelationInfo
-					versionTriageInfo.VersionTriageMergeStatus = ComposeVersionTriageMergeStatus(&issueRelationInfo)
+					versionTriageInfo.VersionTriageMergeStatus = ComposeVersionTriageMergeStatus(*issueRelationInfo.PullRequests)
 					fillVersionTriageDefaultValue(&issueRelationInfo, &versionTriage)
 					break
 				}
@@ -255,13 +255,14 @@ func InheritVersionTriage(fromVersion string, toVersion string) error {
 	return nil
 }
 
-func ComposeVersionTriageMergeStatus(issueRelationInfo *dto.IssueRelationInfo) entity.VersionTriageMergeStatus {
-	if issueRelationInfo.PullRequests == nil || len(*issueRelationInfo.PullRequests) == 0 {
+func ComposeVersionTriageMergeStatus(relatedPrs []entity.PullRequest) entity.VersionTriageMergeStatus {
+	if len(relatedPrs) == 0 {
 		return entity.VersionTriageMergeStatusPr
 	}
+
 	allMerge := true
 	closeNums := 0
-	for _, pr := range *issueRelationInfo.PullRequests {
+	for _, pr := range relatedPrs {
 		if pr.State == "closed" {
 			closeNums++
 			continue
@@ -281,7 +282,7 @@ func ComposeVersionTriageMergeStatus(issueRelationInfo *dto.IssueRelationInfo) e
 			allMerge = false
 		}
 	}
-	if closeNums == len(*issueRelationInfo.PullRequests) {
+	if closeNums == len(relatedPrs) {
 		return entity.VersionTriageMergeStatusPr
 	}
 	if allMerge {

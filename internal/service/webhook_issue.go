@@ -158,7 +158,7 @@ func RefreshIssueField(option *entity.IssueOption) error {
 }
 
 func ExportHistoryVersionTriageWithDatabase(option *dto.IssueRelationInfoQuery) error {
-	infos, _, err := SelectIssueRelationInfo(option)
+	infos, _, err := FindIssueRelationInfo(option)
 	if err != nil {
 		return err
 	}

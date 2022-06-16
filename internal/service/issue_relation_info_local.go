@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"tirelease/commons/git"
 	"tirelease/internal/dto"
 	"tirelease/internal/entity"
 	"tirelease/internal/repository"
@@ -14,7 +15,19 @@ import (
 
 // ============================================================================
 // ============================================================================ CURD Of IssueRelationInfo
-func SelectIssueRelationInfo(option *dto.IssueRelationInfoQuery) (*[]dto.IssueRelationInfo, *entity.ListResponse, error) {
+// Get relation infomations of target issue
+// relation infomations include:
+// 		1. Issue : Issue basic info
+// 		2. IssueAffects : The minor versions affected by the issue
+// 		3. IssuePrRelations : The pull requests related to the issue **regardless** of the version**
+// 		4. PullRequests	: The pull requests related to the issue **in the version**
+// 		5. VersionTriages : The version triage history of the issue
+// ============================================================================
+// TODO: Decouple the infos of current version from the infos of all versions
+//     meta: Issue
+//     current version infos: PullRequests
+//	   all issue info：IssueAffects, IssuePrRelations, VersionTriages
+func FindIssueRelationInfo(option *dto.IssueRelationInfoQuery) (*[]dto.IssueRelationInfo, *entity.ListResponse, error) {
 	// select join
 	joins, err := repository.SelectIssueRelationInfoByJoin(option)
 	if nil != err {
@@ -32,89 +45,106 @@ func SelectIssueRelationInfo(option *dto.IssueRelationInfoQuery) (*[]dto.IssueRe
 	}
 	response.CalcTotalPage()
 
-	// batch select all issue relation info
-	issueIDs := make([]string, 0)
-	issueAffectIDs := make([]int64, 0)
-	pullRequestIDs := make([]string, 0)
-	for i := range *joins {
-		join := (*joins)[i]
-		issueIDs = append(issueIDs, join.IssueID)
+	// Get all issue ids for further batch select of other entities
+	issueIDs := getIssueIDs(*joins)
 
-		ids := strings.Split(join.IssueAffectIDs, ",")
-		for _, id := range ids {
-			idint, _ := strconv.Atoi(id)
-			issueAffectIDs = append(issueAffectIDs, int64(idint))
+	// Get all affected minor versions of the issue
+	issueAffectAll, err := getIssueAffectVersions(*joins)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	issueAll, err := getIssues(issueIDs)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// The pull requests related to the issue **regardless** of the version**
+	issuePrRelationAll, err := getIssuePrRelation(issueIDs)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Get pullrequests whose base branch **regardless** of the version**
+	// option.baseBranch
+	pullRequestAll, err := getRelatedPullRequests(issuePrRelationAll)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Get pullrequests whose base branch **in the version**
+	versionPRs := getSameVersionPullRequests(pullRequestAll, option.BaseBranch)
+
+	versionTriageAll, err := getVersionTriages(issueIDs, option.VersionStatus)
+	if err != nil {
+		return nil, nil, err
+	}
+	// Get all version-triage-merge-status histories of the issue
+	versionTriageAll = appendVersionTriageMergeStatus(versionTriageAll, pullRequestAll, issuePrRelationAll)
+
+	// compose
+	issueRelationInfos := composeIssueRelationInfos(issueAll, issueAffectAll, issuePrRelationAll, versionPRs, versionTriageAll)
+
+	return &issueRelationInfos, response, nil
+}
+
+func SelectIssueRelationInfoUnique(option *dto.IssueRelationInfoQuery) (*dto.IssueRelationInfo, error) {
+	infos, _, err := FindIssueRelationInfo(option)
+	if nil != err {
+		return nil, err
+	}
+	if len(*infos) != 1 {
+		return nil, errors.New(fmt.Sprintf("more than one issue_relation found: %+v", option))
+	}
+	return &((*infos)[0]), nil
+}
+
+func SaveIssueRelationInfo(issueRelationInfo *dto.IssueRelationInfo) error {
+
+	if issueRelationInfo == nil {
+		return nil
+	}
+
+	// Save Issue
+	if issueRelationInfo.Issue != nil {
+		if err := repository.CreateOrUpdateIssue(issueRelationInfo.Issue); nil != err {
+			return err
 		}
 	}
 
-	issueAll := make([]entity.Issue, 0)
-	issueAffectAll := make([]entity.IssueAffect, 0)
-	issuePrRelationAll := make([]entity.IssuePrRelation, 0)
-	pullRequestAll := make([]entity.PullRequest, 0)
-	versionTriageAll := make([]entity.VersionTriage, 0)
-
-	if len(issueIDs) > 0 {
-		issueOption := &entity.IssueOption{
-			IssueIDs: issueIDs,
+	// Save IssueAffects
+	if issueRelationInfo.IssueAffects != nil {
+		for _, issueAffect := range *issueRelationInfo.IssueAffects {
+			if err := repository.CreateOrUpdateIssueAffect(&issueAffect); nil != err {
+				return err
+			}
 		}
-		issueAlls, err := repository.SelectIssue(issueOption)
-		if nil != err {
-			return nil, nil, err
-		}
-		issueAll = append(issueAll, (*issueAlls)...)
 	}
 
-	if len(issueAffectIDs) > 0 {
-		issueAffectOption := &entity.IssueAffectOption{
-			IDs: issueAffectIDs,
+	// Save IssuePrRelations
+	if issueRelationInfo.IssuePrRelations != nil {
+		for _, issuePrRelation := range *issueRelationInfo.IssuePrRelations {
+			if err := repository.CreateIssuePrRelation(&issuePrRelation); nil != err {
+				return err
+			}
 		}
-		issueAffectAlls, err := repository.SelectIssueAffect(issueAffectOption)
-		if nil != err {
-			return nil, nil, err
-		}
-		issueAffectAll = append(issueAffectAll, (*issueAffectAlls)...)
 	}
 
-	if len(issueIDs) > 0 {
-		issuePrRelation := &entity.IssuePrRelationOption{
-			IssueIDs: issueIDs,
+	// Save PullRequests
+	if issueRelationInfo.PullRequests != nil {
+		for _, pullRequest := range *issueRelationInfo.PullRequests {
+			if err := repository.CreateOrUpdatePullRequest(&pullRequest); nil != err {
+				return err
+			}
 		}
-		issuePrRelationAlls, err := repository.SelectIssuePrRelation(issuePrRelation)
-		if nil != err {
-			return nil, nil, err
-		}
-		issuePrRelationAll = append(issuePrRelationAll, (*issuePrRelationAlls)...)
 	}
 
-	if len(issuePrRelationAll) > 0 {
-		for i := range issuePrRelationAll {
-			issuePrRelation := issuePrRelationAll[i]
-			pullRequestIDs = append(pullRequestIDs, issuePrRelation.PullRequestID)
-		}
-		pullRequestOption := &entity.PullRequestOption{
-			PullRequestIDs: pullRequestIDs,
-		}
-		if option.BaseBranch != "" {
-			pullRequestOption.BaseBranch = option.BaseBranch
-		}
-		pullRequestAlls, err := repository.SelectPullRequest(pullRequestOption)
-		if nil != err {
-			return nil, nil, err
-		}
-		pullRequestAll = append(pullRequestAll, (*pullRequestAlls)...)
-	}
+	return nil
+}
 
-	if len(issueIDs) > 0 {
-		versionTriageOption := &entity.VersionTriageOption{
-			IssueIDs: issueIDs,
-		}
-		versionTriageAlls, err := repository.SelectVersionTriage(versionTriageOption)
-		if nil != err {
-			return nil, nil, err
-		}
-
-		versionTriageAll = append(versionTriageAll, (*versionTriageAlls)...)
-	}
+func composeIssueRelationInfos(issueAll []entity.Issue, issueAffectAll []entity.IssueAffect,
+	issuePrRelationAll []entity.IssuePrRelation, pullRequestAll []entity.PullRequest,
+	versionTriageAll []entity.VersionTriage) []dto.IssueRelationInfo {
 
 	// compose
 	issueRelationInfos := make([]dto.IssueRelationInfo, 0)
@@ -172,135 +202,175 @@ func SelectIssueRelationInfo(option *dto.IssueRelationInfoQuery) (*[]dto.IssueRe
 		issueRelationInfos = append(issueRelationInfos, *issueRelationInfo)
 	}
 
-	// for _, join := range *joins {
-	// 	issueRelationInfo := &dto.IssueRelationInfo{}
-
-	// 	// issue
-	// 	issueOption := &entity.IssueOption{
-	// 		IssueID: join.IssueID,
-	// 	}
-	// 	issue, err := repository.SelectIssueUnique(issueOption)
-	// 	if nil != err {
-	// 		return nil, nil, err
-	// 	}
-	// 	issueRelationInfo.Issue = issue
-
-	// 	// issue_affects
-	// 	if join.IssueAffectIDs != "" {
-	// 		idList := make([]int64, 0)
-	// 		ids := strings.Split(join.IssueAffectIDs, ",")
-	// 		for _, id := range ids {
-	// 			idint, _ := strconv.Atoi(id)
-	// 			idList = append(idList, int64(idint))
-	// 		}
-
-	// 		issueAffectOption := &entity.IssueAffectOption{
-	// 			IDs: idList,
-	// 		}
-	// 		issueAffects, err := repository.SelectIssueAffect(issueAffectOption)
-	// 		if nil != err {
-	// 			return nil, nil, err
-	// 		}
-	// 		issueRelationInfo.IssueAffects = issueAffects
-	// 	}
-
-	// 	// issue_pr_relations
-	// 	issuePrRelationOption := &entity.IssuePrRelationOption{
-	// 		IssueID: issue.IssueID,
-	// 	}
-	// 	issuePrRelations, err := repository.SelectIssuePrRelation(issuePrRelationOption)
-	// 	if nil != err {
-	// 		return nil, nil, err
-	// 	}
-	// 	issueRelationInfo.IssuePrRelations = issuePrRelations
-
-	// 	// prs
-	// 	if issuePrRelations != nil && len(*issuePrRelations) > 0 {
-	// 		pullRequestIDs := make([]string, 0)
-	// 		for _, issuePrRelation := range *issuePrRelations {
-	// 			pullRequestIDs = append(pullRequestIDs, string(issuePrRelation.PullRequestID))
-	// 		}
-
-	// 		pullRequestOption := &entity.PullRequestOption{
-	// 			PullRequestIDs: pullRequestIDs,
-	// 		}
-	// 		if option.BaseBranch != "" {
-	// 			pullRequestOption.BaseBranch = option.BaseBranch
-	// 		}
-	// 		pullRequests, err := repository.SelectPullRequest(pullRequestOption)
-	// 		if nil != err {
-	// 			return nil, nil, err
-	// 		}
-	// 		issueRelationInfo.PullRequests = pullRequests
-	// 	}
-
-	// 	// version_triage
-	// 	versionTriageOption := &entity.VersionTriageOption{
-	// 		IssueID: issue.IssueID,
-	// 	}
-	// 	versionTriages, err := repository.SelectVersionTriage(versionTriageOption)
-	// 	if nil != err {
-	// 		return nil, nil, err
-	// 	}
-	// 	issueRelationInfo.VersionTriages = versionTriages
-
-	// 	// return
-	// 	issueRelationInfos = append(issueRelationInfos, *issueRelationInfo)
-	// }
-
-	return &issueRelationInfos, response, nil
+	return issueRelationInfos
 }
 
-func SelectIssueRelationInfoUnique(option *dto.IssueRelationInfoQuery) (*dto.IssueRelationInfo, error) {
-	infos, _, err := SelectIssueRelationInfo(option)
-	if nil != err {
-		return nil, err
+func getIssueIDs(joins []dto.IssueRelationInfoByJoin) []string {
+	issueIDs := make([]string, 0)
+	for i := range joins {
+		join := joins[i]
+		issueIDs = append(issueIDs, join.IssueID)
 	}
-	if len(*infos) != 1 {
-		return nil, errors.New(fmt.Sprintf("more than one issue_relation found: %+v", option))
-	}
-	return &((*infos)[0]), nil
+
+	return issueIDs
 }
 
-func SaveIssueRelationInfo(issueRelationInfo *dto.IssueRelationInfo) error {
-
-	if issueRelationInfo == nil {
-		return nil
-	}
-
-	// Save Issue
-	if issueRelationInfo.Issue != nil {
-		if err := repository.CreateOrUpdateIssue(issueRelationInfo.Issue); nil != err {
-			return err
+func getIssueAffectVersions(joins []dto.IssueRelationInfoByJoin) ([]entity.IssueAffect, error) {
+	issueAffectIDs := make([]int64, 0)
+	for i := range joins {
+		join := (joins)[i]
+		ids := strings.Split(join.IssueAffectIDs, ",")
+		for _, id := range ids {
+			idint, _ := strconv.Atoi(id)
+			issueAffectIDs = append(issueAffectIDs, int64(idint))
 		}
 	}
 
-	// Save IssueAffects
-	if issueRelationInfo.IssueAffects != nil {
-		for _, issueAffect := range *issueRelationInfo.IssueAffects {
-			if err := repository.CreateOrUpdateIssueAffect(&issueAffect); nil != err {
-				return err
+	issueAffectAll := make([]entity.IssueAffect, 0)
+
+	if len(issueAffectIDs) > 0 {
+		issueAffectOption := &entity.IssueAffectOption{
+			IDs: issueAffectIDs,
+		}
+		issueAffectAlls, err := repository.SelectIssueAffect(issueAffectOption)
+		if nil != err {
+			return nil, err
+		}
+		issueAffectAll = append(issueAffectAll, (*issueAffectAlls)...)
+	}
+
+	return issueAffectAll, nil
+}
+
+func getIssues(issueIDs []string) ([]entity.Issue, error) {
+	issueAll := make([]entity.Issue, 0)
+	if len(issueIDs) > 0 {
+		issueOption := &entity.IssueOption{
+			IssueIDs: issueIDs,
+		}
+		issueAlls, err := repository.SelectIssue(issueOption)
+		if nil != err {
+			return nil, err
+		}
+		issueAll = append(issueAll, (*issueAlls)...)
+	}
+
+	return issueAll, nil
+}
+
+func getIssuePrRelation(issueIDs []string) ([]entity.IssuePrRelation, error) {
+	issuePrRelationAll := make([]entity.IssuePrRelation, 0)
+
+	if len(issueIDs) > 0 {
+		issuePrRelation := &entity.IssuePrRelationOption{
+			IssueIDs: issueIDs,
+		}
+		issuePrRelationAlls, err := repository.SelectIssuePrRelation(issuePrRelation)
+		if nil != err {
+			return nil, err
+		}
+		issuePrRelationAll = append(issuePrRelationAll, (*issuePrRelationAlls)...)
+	}
+
+	return issuePrRelationAll, nil
+}
+
+func getRelatedPullRequests(relatedPrs []entity.IssuePrRelation) ([]entity.PullRequest, error) {
+	pullRequestIDs := make([]string, 0)
+	pullRequestAll := make([]entity.PullRequest, 0)
+
+	if len(relatedPrs) > 0 {
+		for i := range relatedPrs {
+			issuePrRelation := relatedPrs[i]
+			pullRequestIDs = append(pullRequestIDs, issuePrRelation.PullRequestID)
+		}
+		pullRequestOption := &entity.PullRequestOption{
+			PullRequestIDs: pullRequestIDs,
+		}
+		pullRequestAlls, err := repository.SelectPullRequest(pullRequestOption)
+		if nil != err {
+			return nil, err
+		}
+		pullRequestAll = append(pullRequestAll, (*pullRequestAlls)...)
+	}
+
+	return pullRequestAll, nil
+}
+
+func getSameVersionPullRequests(pullRequestAll []entity.PullRequest, baseBranch string) []entity.PullRequest {
+	if baseBranch == "" {
+		return pullRequestAll
+	}
+
+	pullRequests := make([]entity.PullRequest, 0)
+
+	if len(pullRequestAll) == 0 {
+		return pullRequests
+	}
+
+	for i := range pullRequestAll {
+		pullRequest := pullRequestAll[i]
+		if pullRequest.BaseBranch == baseBranch {
+			pullRequests = append(pullRequests, pullRequest)
+		}
+	}
+
+	return pullRequests
+}
+
+func getVersionTriages(issueIDs []string, versionStatus entity.ReleaseVersionStatus) ([]entity.VersionTriage, error) {
+	versionTriageAll := make([]entity.VersionTriage, 0)
+	if len(issueIDs) > 0 {
+		versionTriageOption := &entity.VersionTriageOption{
+			IssueIDs: issueIDs,
+		}
+		versionTriageAlls, err := repository.SelectVersionTriage(versionTriageOption)
+		if nil != err {
+			return nil, err
+		}
+
+		versionTriageAll = append(versionTriageAll, (*versionTriageAlls)...)
+	}
+
+	return versionTriageAll, nil
+}
+
+func appendVersionTriageMergeStatus(versionTriages []entity.VersionTriage, pullrequestAll []entity.PullRequest, issuePrRelations []entity.IssuePrRelation) []entity.VersionTriage {
+	triages := make([]entity.VersionTriage, 0)
+	if len(versionTriages) == 0 {
+		return triages
+	}
+
+	for i := range versionTriages {
+		versionTriage := versionTriages[i]
+		prIDs := make([]string, 0)
+
+		for _, relation := range issuePrRelations {
+			if relation.IssueID == versionTriage.IssueID {
+				prIDs = append(prIDs, relation.PullRequestID)
 			}
 		}
-	}
 
-	// Save IssuePrRelations
-	if issueRelationInfo.IssuePrRelations != nil {
-		for _, issuePrRelation := range *issueRelationInfo.IssuePrRelations {
-			if err := repository.CreateIssuePrRelation(&issuePrRelation); nil != err {
-				return err
+		major, minor, _, _ := ComposeVersionAtom(versionTriage.VersionName)
+		minorVersion := fmt.Sprintf("%d.%d", major, minor)
+		baseBranch := git.ReleaseBranchPrefix + minorVersion
+
+		prs := make([]entity.PullRequest, 0)
+		for _, pr := range pullrequestAll {
+			if pr.BaseBranch != baseBranch {
+				continue
+			}
+
+			for _, prID := range prIDs {
+				if prID == pr.PullRequestID {
+					prs = append(prs, pr)
+				}
 			}
 		}
+
+		versionTriage.MergeStatus = ComposeVersionTriageMergeStatus(prs)
+		triages = append(triages, versionTriage)
 	}
 
-	// Save PullRequests
-	if issueRelationInfo.PullRequests != nil {
-		for _, pullRequest := range *issueRelationInfo.PullRequests {
-			if err := repository.CreateOrUpdatePullRequest(&pullRequest); nil != err {
-				return err
-			}
-		}
-	}
-
-	return nil
+	return triages
 }
