@@ -1,5 +1,7 @@
 package fsm
 
+// State is the template of state machine.
+// Constructed by template model, see https://refactoring.guru/design-patterns/template-method/go/example
 type State[T IStateContext] struct {
 	IState[T]
 }
