@@ -2,12 +2,11 @@ package repository
 
 import (
 	"testing"
-	"time"
 
 	"tirelease/commons/database"
+	"tirelease/commons/git"
 	"tirelease/internal/entity"
 
-	"github.com/google/go-github/v41/github"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,32 +15,17 @@ func TestPullRequest(t *testing.T) {
 	var config = generateConfig()
 	database.Connect(config)
 
-	// Create
-	assignee := &github.User{Login: github.String("jcye")}
-	var assignees = &([]github.User{*assignee})
-	var pr = &entity.PullRequest{
-		PullRequestID: "100",
-		Number:        100,
-		State:         "open",
-		Title:         "first",
-		Repo:          "ff",
-		HTMLURL:       "json",
-		CreatedAt:     time.Now(),
-		UpdatedAt:     time.Now(),
-		BaseBranch:    "targetBranch",
-
-		Merged: true,
-
-		SourcePullRequestID: "1000",
-		Assignees:           assignees,
-	}
-	err := CreateOrUpdatePullRequest(pr)
-	// Assert
-	assert.Equal(t, true, err == nil)
-
 	// Select
 	var option = &entity.PullRequestOption{
-		PullRequestID: "100",
+		PullRequestID: git.TestPullRequestNodeID,
+
+		ListOption: entity.ListOption{
+			Page:    1,
+			PerPage: 10,
+
+			OrderBy: "id",
+			Order:   "desc",
+		},
 	}
 	prs, err := SelectPullRequest(option)
 	// Assert

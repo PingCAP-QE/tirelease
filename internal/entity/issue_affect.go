@@ -25,17 +25,22 @@ const (
 
 // List Option
 type IssueAffectOption struct {
-	ID            int64  `json:"id"`
-	IssueID       string `json:"issue_id,omitempty"`
-	AffectVersion string `json:"affect_version,omitempty"`
+	ID            int64              `json:"id,omitempty" form:"id"`
+	IssueID       string             `json:"issue_id,omitempty" form:"issue_id"`
+	AffectVersion string             `json:"affect_version,omitempty" form:"affect_version"`
+	AffectResult  AffectResultResult `json:"affect_result,omitempty" form:"affect_result"`
+
+	IDs []int64 `json:"ids,omitempty" form:"ids"`
+
+	ListOption
 }
 
 // Update Option
 type IssueAffectUpdateOption struct {
-	ID            int64              `json:"id,omitempty"`
-	IssueID       string             `json:"issue_id,omitempty"`
-	AffectVersion string             `json:"affect_version,omitempty"`
-	AffectResult  AffectResultResult `json:"affect_result,omitempty"`
+	ID            int64              `json:"id,omitempty" form:"id"`
+	IssueID       string             `json:"issue_id,omitempty" form:"issue_id"`
+	AffectVersion string             `json:"affect_version,omitempty" form:"affect_version"`
+	AffectResult  AffectResultResult `json:"affect_result,omitempty" form:"affect_result"`
 }
 
 // DB-Table

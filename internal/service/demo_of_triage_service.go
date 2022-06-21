@@ -52,7 +52,8 @@ func AddLabelOfAccept(owner string, repo string, number int, labels []string) er
 
 func transform(issues []*github.Issue, owner string, repo string) []*entity.TriageItem {
 	resp := []*entity.TriageItem{}
-	for _, issue := range issues {
+	for i := range issues {
+		issue := issues[i]
 		triageItem := &entity.TriageItem{
 			CreateTime:  issue.GetCreatedAt(),
 			UpdateTime:  issue.GetUpdatedAt(),

@@ -2,7 +2,6 @@ package service
 
 import (
 	"testing"
-	"time"
 
 	"tirelease/commons/database"
 	"tirelease/commons/git"
@@ -13,16 +12,15 @@ import (
 )
 
 func TestCreateOrUpdateVersionTriageInfo(t *testing.T) {
+	t.Skip()
 	git.Connect(git.TestToken)
 	git.ConnectV4(git.TestToken)
 	database.Connect(generateConfig())
 
 	versionTriage := &entity.VersionTriage{
-		CreateTime:   time.Now(),
-		UpdateTime:   time.Now(),
-		VersionName:  "5.4.0",
-		IssueID:      git.TestIssueNodeID,
-		TriageResult: entity.VersionTriageResultAccept,
+		VersionName:  "6.0",
+		IssueID:      git.TestIssueNodeID2,
+		TriageResult: entity.VersionTriageResultUnKnown,
 	}
 	info, err := CreateOrUpdateVersionTriageInfo(versionTriage)
 
@@ -35,10 +33,37 @@ func TestSelectVersionTriageInfo(t *testing.T) {
 	database.Connect(generateConfig())
 
 	query := &dto.VersionTriageInfoQuery{
-		VersionName: "5.4.0",
+		VersionTriageOption: entity.VersionTriageOption{
+			VersionName: "5.2.2",
+		},
+		Version: "5.2.2",
 	}
-
-	info, err := SelectVersionTriageInfo(query)
+	info, response, err := SelectVersionTriageInfo(query)
 	assert.Equal(t, true, err == nil)
+	assert.Equal(t, true, response.TotalCount > 0)
 	assert.Equal(t, true, info != nil)
+}
+
+func TestComposeVersionTriageUpcomingList(t *testing.T) {
+	t.Skip()
+	database.Connect(generateConfig())
+
+	versionTriages, err := ComposeVersionTriageUpcomingList("5.0.7")
+	assert.Equal(t, true, err == nil)
+	assert.Equal(t, true, len(versionTriages) > 0)
+}
+
+func TestChangePrApprovedLabel(t *testing.T) {
+	t.Skip()
+	database.Connect(generateConfig())
+	git.Connect(git.TestToken)
+	git.ConnectV4(git.TestToken)
+
+	pr, _, err := git.Client.GetPullRequestByNumber("PingCAP-QE", "tirelease", 111)
+	assert.Equal(t, true, err == nil)
+	err = ChangePrApprovedLabel(*pr.NodeID, false, true)
+	assert.Equal(t, true, err == nil)
+
+	err = ChangePrApprovedLabel(*pr.NodeID, true, false)
+	assert.Equal(t, true, err == nil)
 }

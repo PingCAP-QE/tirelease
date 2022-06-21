@@ -2,6 +2,7 @@ package repository
 
 import (
 	"fmt"
+	"time"
 
 	"tirelease/commons/database"
 	"tirelease/internal/entity"
@@ -10,6 +11,12 @@ import (
 )
 
 func CreateRepo(repo *entity.Repo) error {
+	if repo.CreateTime.IsZero() {
+		repo.CreateTime = time.Now()
+	}
+	if repo.UpdateTime.IsZero() {
+		repo.UpdateTime = time.Now()
+	}
 	// 存储
 	if err := database.DBConn.DB.Create(&repo).Error; err != nil {
 		return errors.Wrap(err, fmt.Sprintf("create repo: %+v failed", repo))
@@ -18,6 +25,9 @@ func CreateRepo(repo *entity.Repo) error {
 }
 
 func UpdateRepo(repo *entity.Repo) error {
+	if repo.UpdateTime.IsZero() {
+		repo.UpdateTime = time.Now()
+	}
 	// 更新
 	if err := database.DBConn.DB.Save(&repo).Error; err != nil {
 		return errors.Wrap(err, fmt.Sprintf("update repo: %+v failed", repo))

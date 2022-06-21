@@ -10,6 +10,7 @@ import (
 )
 
 func TestVersionTriage(t *testing.T) {
+	t.Skip()
 	// Init
 	var config = generateConfig()
 	database.Connect(config)

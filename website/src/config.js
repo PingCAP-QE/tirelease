@@ -6,7 +6,7 @@ const dev_config = {
 
 const prod_config = {
   // The URL of the server to use.
-  SERVER_HOST: "",
+  SERVER_HOST: "/",
 };
 
 console.log(process.env);

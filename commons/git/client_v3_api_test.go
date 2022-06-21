@@ -129,6 +129,18 @@ func TestGetPullRequest(t *testing.T) {
 	assert.Equal(t, true, pullRequest != nil)
 }
 
+//=======================================================================Comment
+func TestCreateCommentByNumber(t *testing.T) {
+	// Connect
+	Connect(TestToken)
+
+	// Create comment
+	_, _, err := Client.CreateCommentByNumber(TestOwner2, TestRepo2, TestPullRequestId2, MergeRetryComment)
+
+	// Assert
+	assert.Equal(t, true, err == nil)
+}
+
 //=======================================================================Label
 func TestAddLabel(t *testing.T) {
 	// Connect

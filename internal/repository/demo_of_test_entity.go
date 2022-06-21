@@ -12,8 +12,12 @@ import (
 
 // Implement
 func TestEntityInsert(testEntity *entity.TestEntity) error {
-	testEntity.CreateTime = time.Now()
-	testEntity.UpdateTime = time.Now()
+	if testEntity.CreateTime.IsZero() {
+		testEntity.CreateTime = time.Now()
+	}
+	if testEntity.UpdateTime.IsZero() {
+		testEntity.UpdateTime = time.Now()
+	}
 
 	if err := database.DBConn.DB.Create(&testEntity).Error; err != nil {
 		return errors.Wrap(err, fmt.Sprintf("create test entity: %+v failed", testEntity))

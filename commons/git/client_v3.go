@@ -5,6 +5,7 @@ package git
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/go-github/v41/github"
 	"golang.org/x/oauth2"
@@ -24,6 +25,7 @@ func Connect(accessToken string) {
 		&oauth2.Token{AccessToken: accessToken},
 	)
 	tc := oauth2.NewClient(ctx, ts)
+	tc.Timeout = time.Second * 180
 
 	// Github client
 	githubClient := github.NewClient(tc)

@@ -7,6 +7,7 @@ import (
 	"tirelease/commons/git"
 
 	"tirelease/internal/dto"
+	"tirelease/internal/entity"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -18,7 +19,7 @@ func TestComposeIssuePrRelationsByIssue(t *testing.T) {
 	database.Connect(generateConfig())
 
 	// Test
-	triageRelationInfo, err := GetIssueRelationInfoByIssueIDV4(git.TestIssueNodeID)
+	triageRelationInfo, err := GetIssueRelationInfoByIssueIDV4(git.TestIssueNodeID2)
 	assert.Equal(t, true, err == nil)
 	assert.Equal(t, true, len(*triageRelationInfo.IssuePrRelations) > 0)
 	assert.Equal(t, true, len(*triageRelationInfo.PullRequests) > 0)
@@ -36,10 +37,13 @@ func TestSelectIssueRelationInfo(t *testing.T) {
 
 	// Select
 	option := &dto.IssueRelationInfoQuery{
-		IssueID: git.TestIssueNodeID,
+		IssueOption: entity.IssueOption{
+			IssueID: git.TestIssueNodeID,
+		},
 	}
-	issueRelationInfos, err := SelectIssueRelationInfo(option)
+	issueRelationInfos, response, err := FindIssueRelationInfo(option)
 	assert.Equal(t, true, err == nil)
+	assert.Equal(t, true, response.TotalCount > 0)
 	assert.Equal(t, true, len(*issueRelationInfos) > 0)
 }
 
@@ -50,9 +54,12 @@ func TestSelectIssueRelationInfoByState(t *testing.T) {
 
 	// Select
 	option := &dto.IssueRelationInfoQuery{
-		State: "open",
+		IssueOption: entity.IssueOption{
+			State: "open",
+		},
 	}
-	issueRelationInfos, err := SelectIssueRelationInfo(option)
+	issueRelationInfos, response, err := FindIssueRelationInfo(option)
 	assert.Equal(t, true, err == nil)
+	assert.Equal(t, true, response.TotalCount > 0)
 	assert.Equal(t, true, len(*issueRelationInfos) > 0)
 }

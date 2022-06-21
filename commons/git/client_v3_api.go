@@ -45,6 +45,14 @@ func (client *GithubInfo) GetPullRequestByNumber(owner, name string, number int)
 	return client.Client.PullRequests.Get(context.Background(), owner, name, number)
 }
 
+// ============================================================================ Comment
+func (client *GithubInfo) CreateCommentByNumber(owner, name string, number int, comment string) (*github.IssueComment, *github.Response, error) {
+	issueComment := &github.IssueComment{
+		Body: &comment,
+	}
+	return client.Client.Issues.CreateComment(context.Background(), owner, name, number, issueComment)
+}
+
 // ============================================================================ Label
 func (client *GithubInfo) AddLabel(owner, name string, number int, label string) ([]*github.Label, *github.Response, error) {
 	return client.Client.Issues.AddLabelsToIssue(context.Background(), owner, name, number, []string{label})

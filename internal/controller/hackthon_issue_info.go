@@ -2,6 +2,8 @@ package controller
 
 import (
 	"log"
+	"net/http"
+
 	"tirelease/internal/service"
 
 	"github.com/gin-gonic/gin"
@@ -12,10 +14,10 @@ func ListIssueInfo(c *gin.Context) {
 	issueInfos, err := service.ListIssueInfo(state)
 	if err != nil {
 		log.Fatal(err)
-		c.JSON(500, err.Error())
+		c.Error(err)
 		return
 	}
-	c.JSON(200, issueInfos)
+	c.JSON(http.StatusOK, issueInfos)
 }
 
 func FilterIssueInfo(c *gin.Context) {
@@ -23,8 +25,8 @@ func FilterIssueInfo(c *gin.Context) {
 	issueInfos, err := service.FilterIssueInfo(version)
 	if err != nil {
 		log.Fatal(err)
-		c.JSON(500, err.Error())
+		c.Error(err)
 		return
 	}
-	c.JSON(200, issueInfos)
+	c.JSON(http.StatusOK, issueInfos)
 }

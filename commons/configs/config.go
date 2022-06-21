@@ -15,6 +15,7 @@ type ConfigYaml struct {
 		Port     string `default:"3306"`
 		DataBase string `required:"true"`
 		CharSet  string `default:"utf8"`
+		TimeZone string `default:"Asia%2FShanghai"`
 	}
 
 	Github struct {

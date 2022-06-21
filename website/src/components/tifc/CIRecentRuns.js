@@ -6,7 +6,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 
-export const CIRecentRuns =( {data} ) => {
+export const CIRecentRuns =( {data, text} ) => {
     const [open, setOpen] = React.useState(false);
     const [scroll, setScroll] = React.useState('paper');
     const [maxWidth, setMaxWidth] = React.useState('lg');
@@ -30,7 +30,7 @@ export const CIRecentRuns =( {data} ) => {
 
     return (
         <>
-        <Button onClick={handleClickOpen('paper')}>History</Button>
+        <Button onClick={handleClickOpen('paper')} style={{justifyContent: "flex-start"}}>{text}</Button>
         {/* <Button onClick={handleClickOpen('body')}>scroll=body</Button> */}
         <Dialog
             open={open}

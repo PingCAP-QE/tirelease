@@ -28,6 +28,13 @@ const CIColumnsGrid = [
         headerAlign: 'left',
         type: 'number',
         align: 'left',
+        valueGetter: function(params) {
+            // for download
+            return params.row.affected_prs;
+        },
+        renderCell: function(params){
+            return <CIRecentRuns data={params.row.recent_runs} text={params.row.affected_prs} />
+        },
         editable: false,
         filterable: false,
         pinnable: true,
@@ -89,7 +96,7 @@ const CIColumnsGrid = [
         },
         renderCell: function(params) {
             return <p>
-                PRID: {params.row.first_seen.pull_request} <br/>
+                PRID: <a target="_blank" href={params.row.first_seen.pr_link}>{params.row.first_seen.pull_request}</a> <br/>
                 CommitID: {params.row.first_seen.commit_id} <br/>
                 Author: {params.row.first_seen.author} 
             </p>;
@@ -110,7 +117,7 @@ const CIColumnsGrid = [
         },
         renderCell: function(params) {
             return <p>
-                PRID: {params.row.last_seen.pull_request} <br/>
+                PRID: <a target="_blank" href={params.row.last_seen.pr_link}>{params.row.last_seen.pull_request}</a> <br/>
                 CommitID: {params.row.last_seen.commit_id} <br/>
                 Author: {params.row.last_seen.author} 
             </p>;
@@ -132,7 +139,7 @@ const CIColumnsGrid = [
         renderCell: function(params) {
             // for page show
             return <p>
-                PRID: {params.row.may_introduced_by.pull_request} <br/>
+                PRID: <a target="_blank" href={params.row.may_introduced_by.pr_link}>{params.row.may_introduced_by.pull_request}</a> <br/>
                 CommitID: {params.row.may_introduced_by.commit_id} <br/>
                 Author: {params.row.may_introduced_by.author} 
             </p>;
@@ -170,7 +177,7 @@ const CIColumnsGrid = [
             return JSON.stringify(params.row.recent_runs, null, 4);
         },
         renderCell: function(params){
-            return <CIRecentRuns data={params.row.recent_runs} />
+            return <CIRecentRuns data={params.row.recent_runs} text="History" />
         },
         sortable: false,
         align: 'left',

@@ -51,6 +51,18 @@ func TestGetIssueByIDV4(t *testing.T) {
 	assert.Equal(t, true, issue != nil)
 }
 
+func TestGetIssueWithoutTimelineByIDV4(t *testing.T) {
+	// Connect
+	ConnectV4(TestToken)
+
+	// Query
+	issue, err := ClientV4.GetIssueWithoutTimelineByID(TestIssueNodeID)
+
+	// Assert
+	assert.Equal(t, true, err == nil)
+	assert.Equal(t, true, issue != nil)
+}
+
 //=======================================================================Pr
 func TestGetPullRequestV4(t *testing.T) {
 	// Connect
@@ -70,6 +82,18 @@ func TestGetPullRequestByIDV4(t *testing.T) {
 
 	// Query
 	pr, err := ClientV4.GetPullRequestByID(TestPullRequestNodeID)
+
+	// Assert
+	assert.Equal(t, true, err == nil)
+	assert.Equal(t, true, pr != nil)
+}
+
+func TestGetPullRequestWithoutTimelineByIDV4(t *testing.T) {
+	// Connect
+	ConnectV4(TestToken)
+
+	// Query
+	pr, err := ClientV4.GetPullRequestWithoutTimelineByID(TestPullRequestNodeID)
 
 	// Assert
 	assert.Equal(t, true, err == nil)

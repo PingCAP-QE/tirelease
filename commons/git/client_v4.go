@@ -6,6 +6,7 @@ package git
 
 import (
 	"context"
+	"time"
 
 	"github.com/shurcooL/githubv4"
 	"golang.org/x/oauth2"
@@ -22,6 +23,7 @@ func ConnectV4(accessToken string) {
 	// Outh
 	src := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: accessToken})
 	httpClient := oauth2.NewClient(context.Background(), src)
+	httpClient.Timeout = time.Second * 180
 
 	// Client
 	ClientV4.client = githubv4.NewClient(httpClient)

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"tirelease/commons/git"
+	"tirelease/internal/service/component"
 
 	"github.com/google/go-github/v41/github"
 	"github.com/shurcooL/githubv4"
@@ -22,9 +23,9 @@ type Issue struct {
 	Repo    string `json:"repo,omitempty"`
 	HTMLURL string `json:"html_url,omitempty"`
 
-	CreatedAt time.Time  `json:"created_at,omitempty"`
-	UpdatedAt time.Time  `json:"updated_at,omitempty"`
-	ClosedAt  *time.Time `json:"closed_at,omitempty"`
+	CreateTime time.Time  `json:"create_time,omitempty"`
+	UpdateTime time.Time  `json:"update_time,omitempty"`
+	CloseTime  *time.Time `json:"close_time,omitempty"`
 
 	LabelsString    string `json:"labels_string,omitempty"`
 	AssigneesString string `json:"assignees_string,omitempty"`
@@ -34,21 +35,30 @@ type Issue struct {
 	TypeLabel             string `json:"type_label,omitempty"`
 
 	// OutPut-Serial
-	Labels    *[]github.Label `json:"labels,omitempty" gorm:"-"`
-	Assignees *[]github.User  `json:"assignees,omitempty" gorm:"-"`
+	Labels     *[]github.Label       `json:"labels,omitempty" gorm:"-"`
+	Assignees  *[]github.User        `json:"assignees,omitempty" gorm:"-"`
+	Components []component.Component `json:"components,omitempty" gorm:"-"`
 }
 
 // List Option
 type IssueOption struct {
-	ID      int64  `json:"id"`
-	IssueID string `json:"issue_id,omitempty"`
-	Number  int    `json:"number,omitempty"`
-	State   string `json:"state,omitempty"`
-	Owner   string `json:"owner,omitempty"`
-	Repo    string `json:"repo,omitempty"`
+	ID            int64  `json:"id" form:"id"`
+	IssueID       string `json:"issue_id,omitempty" form:"issue_id"`
+	Number        int    `json:"number,omitempty" form:"number"`
+	State         string `json:"state,omitempty" form:"state"`
+	Owner         string `json:"owner,omitempty" form:"owner"`
+	Repo          string `json:"repo,omitempty" form:"repo"`
+	SeverityLabel string `json:"severity_label,omitempty" form:"severity_label"`
+	TypeLabel     string `json:"type_label,omitempty" form:"type_label"`
 
-	SeverityLabel string `json:"severity_label,omitempty"`
-	TypeLabel     string `json:"type_label,omitempty"`
+	CreateTime        time.Time `json:"create_time,omitempty"`
+	UpdateTime        time.Time `json:"update_time,omitempty"`
+	CloseTime         time.Time `json:"close_time,omitempty"`
+	IssueIDs          []string  `json:"issue_ids,omitempty" form:"issue_ids"`
+	SeverityLabels    []string  `json:"severity_labels,omitempty" form:"severity_labels"`
+	NotSeverityLabels []string  `json:"not_severity_labels,omitempty" form:"not_severity_labels"`
+
+	ListOption
 }
 
 // DB-Table
@@ -61,7 +71,8 @@ func ComposeIssueFromV3(issue *github.Issue) *Issue {
 	severityLabel := ""
 	typeLabel := ""
 	labels := &[]github.Label{}
-	for _, node := range issue.Labels {
+	for i := range issue.Labels {
+		node := issue.Labels[i]
 		label := &github.Label{
 			Name:  node.Name,
 			Color: node.Color,
@@ -76,7 +87,8 @@ func ComposeIssueFromV3(issue *github.Issue) *Issue {
 		}
 	}
 	assignees := &[]github.User{}
-	for _, node := range issue.Assignees {
+	for i := range issue.Assignees {
+		node := issue.Assignees[i]
 		user := &github.User{
 			Login: node.Login,
 		}
@@ -95,9 +107,9 @@ func ComposeIssueFromV3(issue *github.Issue) *Issue {
 		Repo:    repo,
 		HTMLURL: *issue.HTMLURL,
 
-		CreatedAt: *issue.CreatedAt,
-		UpdatedAt: *issue.UpdatedAt,
-		ClosedAt:  issue.ClosedAt,
+		CreateTime: *issue.CreatedAt,
+		UpdateTime: *issue.UpdatedAt,
+		CloseTime:  issue.ClosedAt,
 
 		Labels:    labels,
 		Assignees: assignees,
@@ -113,7 +125,8 @@ func ComposeIssueFromV4(issueFiled *git.IssueField) *Issue {
 	severityLabel := ""
 	typeLabel := ""
 	labels := &[]github.Label{}
-	for _, node := range issueFiled.Labels.Nodes {
+	for i := range issueFiled.Labels.Nodes {
+		node := issueFiled.Labels.Nodes[i]
 		label := github.Label{
 			Name: github.String(string(node.Name)),
 		}
@@ -130,7 +143,8 @@ func ComposeIssueFromV4(issueFiled *git.IssueField) *Issue {
 		}
 	}
 	assignees := &[]github.User{}
-	for _, node := range issueFiled.Assignees.Nodes {
+	for i := range issueFiled.Assignees.Nodes {
+		node := issueFiled.Assignees.Nodes[i]
 		user := github.User{
 			Login: (*string)(&node.Login),
 		}
@@ -155,8 +169,8 @@ func ComposeIssueFromV4(issueFiled *git.IssueField) *Issue {
 		Repo:    string(issueFiled.Repository.Name),
 		HTMLURL: string(issueFiled.Url),
 
-		CreatedAt: issueFiled.CreatedAt.Time,
-		UpdatedAt: issueFiled.UpdatedAt.Time,
+		CreateTime: issueFiled.CreatedAt.Time,
+		UpdateTime: issueFiled.UpdatedAt.Time,
 
 		Labels:    labels,
 		Assignees: assignees,
@@ -166,7 +180,7 @@ func ComposeIssueFromV4(issueFiled *git.IssueField) *Issue {
 		TypeLabel:             typeLabel,
 	}
 	if issueFiled.ClosedAt != nil {
-		issue.ClosedAt = &issueFiled.ClosedAt.Time
+		issue.CloseTime = &issueFiled.ClosedAt.Time
 	}
 
 	return issue
@@ -184,9 +198,9 @@ CREATE TABLE IF NOT EXISTS issue (
 	repo VARCHAR(255) COMMENT '仓库名称',
 	html_url VARCHAR(1024) COMMENT '链接',
 
-	closed_at TIMESTAMP COMMENT '关闭时间',
-	created_at TIMESTAMP COMMENT '创建时间',
-	updated_at TIMESTAMP COMMENT '更新时间',
+	close_time TIMESTAMP COMMENT '关闭时间',
+	create_time TIMESTAMP COMMENT '创建时间',
+	update_time TIMESTAMP COMMENT '更新时间',
 
 	labels_string TEXT COMMENT '标签',
 	assignees_string TEXT COMMENT '处理人列表',
@@ -199,7 +213,9 @@ CREATE TABLE IF NOT EXISTS issue (
 	UNIQUE KEY uk_issueid (issue_id),
 	INDEX idx_state (state),
 	INDEX idx_owner_repo (owner, repo),
-	INDEX idx_createdat (created_at),
+	INDEX idx_createtime (create_time),
+	INDEX idx_updatetime (update_time),
+	INDEX idx_closetime (close_time),
 	INDEX idx_severitylabel (severity_label),
 	INDEX idx_typelabel (type_label)
 )

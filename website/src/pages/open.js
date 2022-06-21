@@ -7,90 +7,97 @@ import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import { IssueGrid } from "../components/issues/IssueGrid";
 import Columns from "../components/issues/GridColumns";
-import { currentVersions, url } from "../utils";
 import { useQuery } from "react-query";
-import {
-  severity,
-  state,
-  type,
-  openIn24h,
-  openSince,
-  NOT,
-  AND,
-} from "../components/issues/filter/index";
+import { fetchVersion } from "../components/issues/fetcher/fetchVersion";
+import { nextHour } from "../utils";
 
-function RecentOpen() {
+const Table = ({ tab }) => {
+  const versionQuery = useQuery(["version", "maintained"], fetchVersion);
+  if (versionQuery.isLoading) {
+    return (
+      <div>
+        <p>Loading...</p>
+      </div>
+    );
+  }
+  if (versionQuery.isError) {
+    return (
+      <div>
+        <p>{versionQuery.error}</p>
+      </div>
+    );
+  }
   const filters = [
-    type("bug"),
-    AND([NOT(severity("moderate")), NOT(severity("minor"))]),
-    state("open"),
+    "type_label=type/bug",
+    "state=open",
+    "severity_labels=severity/major",
+    "severity_labels=severity/critical",
   ];
   const pickColumns = [];
-  for (const version of currentVersions) {
+  for (const version of versionQuery.data) {
     pickColumns.push(Columns.getAffectionOnVersion(version));
   }
-
-  const [tab, setTab] = React.useState(0);
-  const tabs = ["Created in 24h", "Created in 7d", "Created in 30d", "ALL"];
+  const dt = nextHour();
   switch (tab) {
     case 0:
-      filters.push(openIn24h());
+      filters.push(
+        `created_at_stamp=${(dt.getTime() - 60 * 60 * 1000 * 24) / 1000}`
+      );
       break;
     case 1:
-      filters.push(openSince(new Date().getTime() - 60 * 60 * 1000 * 24 * 7));
+      filters.push(
+        `created_at_stamp=${(dt.getTime() - 60 * 60 * 1000 * 24 * 7) / 1000}`
+      );
       break;
     case 2:
-      filters.push(openSince(new Date().getTime() - 60 * 60 * 1000 * 24 * 30));
+      filters.push(
+        `created_at_stamp=${(dt.getTime() - 60 * 60 * 1000 * 24 * 30) / 1000}`
+      );
       break;
     case 3:
       break;
     default:
       break;
   }
+  console.log("filters", tab, filters);
+  return (
+    <IssueGrid
+      columns={[
+        Columns.repo,
+        Columns.number,
+        Columns.title,
+        Columns.type,
+        Columns.severity,
+        Columns.state,
+        ...pickColumns,
+      ]}
+      filters={filters}
+    ></IssueGrid>
+  );
+};
 
+function RecentOpen() {
+  const [tab, setTab] = React.useState(0);
+  const tabs = ["Created in 24h", "Created in 7d", "Created in 30d", "ALL"];
   const handleChange = (event, newValue) => {
     setTab(newValue);
   };
-  const { isLoading, error, data } = useQuery("issue", () => {
-    return fetch(url("issue"))
-      .then((res) => {
-        const data = res.json();
-        return data;
-      })
-      .catch((e) => {
-        console.log(e);
-      });
-  });
   return (
     <Layout>
       <Container maxWidth="xxl" sx={{ mt: 4, mb: 4 }}>
         <Accordion defaultExpanded={true}>
           <AccordionSummary expandIcon={<ExpandMore />}>
-            Recent Open
+            Recent Opened(Filter by severity of major/critical)
           </AccordionSummary>
           <AccordionDetails>
             <Tabs value={tab} onChange={handleChange}>
               {tabs.map((v) => (
-                <Tab label={v}></Tab>
+                <Tab key={v} label={v}></Tab>
               ))}
             </Tabs>
-            {isLoading && <p>Loading...</p>}
-            {error && <p>Error: {error.message}</p>}
-            {data && (
-              <IssueGrid
-                columns={[
-                  Columns.repo,
-                  Columns.number,
-                  Columns.title,
-                  Columns.type,
-                  Columns.severity,
-                  Columns.state,
-                  ...pickColumns,
-                ]}
-                data={data.data}
-                filters={filters}
-              ></IssueGrid>
-            )}
+            {tabs.map((_, i) => {
+              return <>{i === tab && <Table tab={tab}></Table>}</>;
+            })}
           </AccordionDetails>
         </Accordion>
       </Container>

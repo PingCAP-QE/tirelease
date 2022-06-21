@@ -1,40 +1,7 @@
-import { Chip as MaterialChip } from "@mui/material";
-import { withStyles } from "@mui/styles";
-
-const Chip = (props) => {
-  const StyledChip = withStyles({
-    root: {
-      color: "white",
-      backgroundColor: `${props.color} !important`,
-      "&:hover": {
-        backgroundColor: props.color,
-        filter: "brightness(120%)",
-      },
-      "&:active": {
-        boxShadow: "none",
-        backgroundColor: props.color,
-        borderColor: props.color,
-      },
-    },
-    outlined: {
-      color: props.color,
-      border: `1px solid ${props.color}`,
-      backgroundColor: `transparent !important`,
-    },
-    icon: {
-      color: props.variant === "outlined" ? props.color : "white",
-    },
-    deleteIcon: {
-      color: props.variant === "outlined" ? props.color : "white",
-    },
-  })(MaterialChip);
-
-  return <StyledChip {...props} />;
-};
-
+import { Chip } from "@mui/material";
 export function getLabelValue(filter, mapper) {
   return (params) => {
-    const filtered = params.row.Issue.labels.filter(filter);
+    const filtered = params.row.issue.labels.filter(filter);
     return filtered
       .map((label) => label.name)
       .map(mapper)
@@ -44,13 +11,14 @@ export function getLabelValue(filter, mapper) {
 
 export function renderLabel(filter, mapper) {
   return (params) => {
-    const filtered = params.row.Issue.labels.filter(filter);
+    const filtered = params.row.issue.labels.filter(filter);
     return filtered.map((label) => (
       //   <Chip label={mapper(label.name)} color={"#" + label.color}></Chip>
-      <MaterialChip
+      <Chip
         label={mapper(label.name)}
+        size="small"
         style={{ backgroundColor: "#" + label.color }}
-      ></MaterialChip>
+      ></Chip>
     ));
   };
 }

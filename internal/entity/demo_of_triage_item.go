@@ -31,7 +31,7 @@ const (
 
 // List Option
 type TriageItemOption struct {
-	ID int64 `json:"id"`
+	ID int64 `json:"id" form:"id"`
 }
 
 // DB-Table

@@ -6,10 +6,9 @@ import (
 
 // VersionTriage Query Struct
 type VersionTriageInfoQuery struct {
-	ID           int64                      `json:"id"`
-	VersionName  string                     `json:"version_name,omitempty"`
-	IssueID      string                     `json:"issue_id,omitempty"`
-	TriageResult entity.VersionTriageResult `json:"triage_result,omitempty"`
+	entity.VersionTriageOption
+
+	Version string `json:"version,omitempty" form:"version" uri:"version"`
 }
 
 // VersionTriage ReturnBack Struct
@@ -18,8 +17,10 @@ type VersionTriageInfo struct {
 	IsFrozen       bool                   `json:"is_frozen,omitempty"`
 	IsAccept       bool                   `json:"is_accept,omitempty"`
 
-	VersionTriage     *entity.VersionTriage `json:"version_triage,omitempty"`
-	IssueRelationInfo *IssueRelationInfo    `json:"issue_relation_info,omitempty"`
+	VersionTriage            *entity.VersionTriage           `json:"version_triage,omitempty"`
+	VersionTriageMergeStatus entity.VersionTriageMergeStatus `json:"version_triage_merge_status,omitempty"`
+
+	IssueRelationInfo *IssueRelationInfo `json:"issue_relation_info,omitempty"`
 }
 
 type VersionTriageInfoWrap struct {

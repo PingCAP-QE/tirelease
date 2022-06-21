@@ -36,7 +36,7 @@ export default function AffectionSelect({
       ) : (
         <>
           {mutation.isError ? (
-            <div>An error occurred: {mutation.error.message}</div>
+            <div>An error occurred: {JSON.stringify(mutation.error)}</div>
           ) : null}
           <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }}>
             <Select
@@ -45,9 +45,8 @@ export default function AffectionSelect({
               onChange={handleChange}
               label="Affection"
             >
-              <MenuItem value="unknown">
-                <em>unknown</em>
-              </MenuItem>
+              <MenuItem value={"N/A"} disabled={true}>-</MenuItem>
+              <MenuItem value={"unknown"}>unknown</MenuItem>
               <MenuItem value={"no"}>no</MenuItem>
               <MenuItem value={"yes"}>yes</MenuItem>
             </Select>

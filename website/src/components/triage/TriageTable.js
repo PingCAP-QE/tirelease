@@ -55,7 +55,7 @@ export default function TriageTable() {
 
   return (
     <React.Fragment>
-      <Title>Triaqwqwwwwwge Item Listz</Title>
+      <Title>Triage Item List</Title>
       <Table size="small">
         <TableHead>
           <TableRow>

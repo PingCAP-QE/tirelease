@@ -1,29 +1,37 @@
 package controller
 
 import (
-	"fmt"
+	"net/http"
 
 	"tirelease/internal/dto"
 	"tirelease/internal/service"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 func SelectIssueRelationInfos(c *gin.Context) {
 	// Params
 	option := dto.IssueRelationInfoQuery{}
-	if err := c.ShouldBind(&option); err != nil {
-		c.JSON(500, err.Error())
+
+	if err := c.ShouldBindWith(&option, binding.Form); err != nil {
+		c.Error(err)
 		return
 	}
-	fmt.Println(option)
+	if option.Page == 0 {
+		option.Page = 1
+	}
+	if option.PerPage == 0 {
+		option.PerPage = 10
+	}
+	option.ParamFill()
 
 	// Action
-	issueRelationInfos, err := service.SelectIssueRelationInfo(&option)
+	issueRelationInfos, response, err := service.FindIssueRelationInfo(&option)
 	if err != nil {
-		c.JSON(500, err.Error())
+		c.Error(err)
 		return
 	}
 
-	c.JSON(200, gin.H{"data": issueRelationInfos})
+	c.JSON(http.StatusOK, gin.H{"data": issueRelationInfos, "response": response})
 }

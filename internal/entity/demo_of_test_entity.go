@@ -36,7 +36,7 @@ const (
 
 // Select Option
 type TestEntityOption struct {
-	ID int64 `json:"id"`
+	ID int64 `json:"id" form:"id"`
 }
 
 // DB-Table

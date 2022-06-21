@@ -127,7 +127,7 @@ export const RenderCITable = ({
 
 // const CITable = ({ jobName, timestamp }) => {
 //     const { isLoading, error, data } = useQuery("CITable", () => {
-//         return fetch("http://172.16.5.15:30792/report/?job_name=" + jobName + "&timestamp=" + timestamp)
+//         return fetch("http://172.16.5.15:30792/report/?timestamp=" + timestamp)
 //         .then((res) => {
 //             const data = res.json();
 //             // console.log(data);

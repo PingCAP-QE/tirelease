@@ -17,3 +17,5 @@ var TestIssueId2 int = 15
 var TestPullRequestId2 int = 17
 var TestIssueNodeID2 string = "I_kwDOGf5ce85E2TaX"
 var TestPullRequestNodeID2 string = "PR_kwDOGf5ce84z7gtv"
+
+var TestPullRequestNodeID3 string = "MDExOlB1bGxSZXF1ZXN0MTQyOTE5MTM1"

@@ -5,13 +5,14 @@ import Select from "@mui/material/Select";
 import { useMutation } from "react-query";
 import axios from "axios";
 import { url } from "../../../utils";
+import { mapPickStatusToBackend } from "./mapper"
 
 export default function PickSelect({
   id,
   version = "master",
   patch = "master",
   pick = "unknown",
-  onChange = () => {},
+  onChange = () => { },
 }) {
   const mutation = useMutation((newAffect) => {
     return axios.patch(url(`issue/${id}/cherrypick/${version}`), newAffect);
@@ -22,12 +23,8 @@ export default function PickSelect({
     mutation.mutate({
       issue_id: id,
       version_name: version,
-      triage_result: {
-        unknown: "UnKnown",
-        approve: "Accept",
-        later: "Later",
-        "won't fix": "Won't Fix",
-      }[event.target.value],
+      triage_result: mapPickStatusToBackend(event.target.value),
+      updated_vars: ["triage_result"]
     });
     onChange(event.target.value);
     setAffects(event.target.value);
@@ -48,16 +45,20 @@ export default function PickSelect({
               value={affects}
               onChange={handleChange}
               label="Affection"
-              disabled={pick.startsWith("fixed")}
+              disabled={pick.startsWith("released")}
             >
-              <MenuItem value="unknown">
-                <em>unknown</em>
+              <MenuItem value={"N/A"} disabled={true}>-</MenuItem>
+              <MenuItem value={"unknown"}>unknown</MenuItem>
+              <MenuItem value={"approved"}>
+                <div style={{ color: "green", fontWeight: "bold" }}>
+                  approved
+                </div>
               </MenuItem>
-              <MenuItem value={"approve"}>approve</MenuItem>
               <MenuItem value={"later"}>later</MenuItem>
               <MenuItem value={"won't fix"}>won't fix</MenuItem>
-              <MenuItem value={"fixed"} disabled={true}>
-                fixed in {patch}
+              <MenuItem value={"approved(frozen)"} disabled={true}>approved(frozen)</MenuItem>
+              <MenuItem value={"released"} disabled={true}>
+                released in {patch}
               </MenuItem>
             </Select>
           </FormControl>

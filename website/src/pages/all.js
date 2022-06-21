@@ -6,49 +6,43 @@ import { Accordion, AccordionDetails, AccordionSummary } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Box from "@mui/material/Box";
 
-import { useQuery } from "react-query";
-import { url, currentVersions } from "../utils";
+import { useQuery, useQueryClient } from "react-query";
 import { IssueGrid } from "../components/issues/IssueGrid";
 import Columns from "../components/issues/GridColumns";
+import { fetchVersion } from "../components/issues/fetcher/fetchVersion";
+import { Filters } from "../components/issues/filter/FilterDialog";
 
 function Table() {
-  const { isLoading, error, data } = useQuery("issue", () => {
-    return fetch(url("issue"))
-      .then((res) => {
-        const data = res.json();
-        return data;
-      })
-      .catch((e) => {
-        console.log(e);
-      });
-  });
-  console.log(isLoading, error, data);
-  if (isLoading) {
+  const versionQuery = useQuery(["version", "maintained"], fetchVersion);
+  if (versionQuery.isLoading) {
     return (
       <div>
         <p>Loading...</p>
       </div>
     );
   }
-  if (error) {
+  if (versionQuery.error) {
     return (
       <div>
-        <p>Error: {error.message}</p>
+        <p>Error: {versionQuery.error}</p>
       </div>
     );
   }
-  console.log("fetched data", data);
+
   const columns = [
     Columns.repo,
+    Columns.components,
     Columns.number,
     Columns.title,
     Columns.state,
+    Columns.createdTime,
+    Columns.closedTime,
     Columns.pr,
     Columns.type,
     Columns.severity,
     Columns.labels,
   ];
-  for (const version of currentVersions) {
+  for (const version of versionQuery.data) {
     columns.push(
       Columns.getAffectionOnVersion(version),
       Columns.getPROnVersion(version),
@@ -56,7 +50,57 @@ function Table() {
     );
   }
   return (
-    <IssueGrid data={data.data} columns={columns} filters={[]}></IssueGrid>
+    <IssueGrid
+      columns={columns}
+      filters={[
+        // copy data
+        {
+          ...Filters.repo,
+          data: JSON.parse(JSON.stringify(Filters.repo.data)),
+        },
+        {
+          ...Filters.number,
+          data: JSON.parse(JSON.stringify(Filters.number.data)),
+        },
+        {
+          ...Filters.title,
+          data: JSON.parse(JSON.stringify(Filters.title.data)),
+        },
+        {
+          ...Filters.state,
+          data: JSON.parse(JSON.stringify(Filters.state.data)),
+        },
+        {
+          ...Filters.type,
+          data: JSON.parse(JSON.stringify(Filters.type.data)),
+        },
+        {
+          ...Filters.severity,
+          data: JSON.parse(JSON.stringify(Filters.severity.data)),
+        },
+        {
+          ...Filters.affect,
+          data: {
+            ...JSON.parse(JSON.stringify(Filters.affect.data)),
+            versions: versionQuery.data,
+          },
+        },
+        {
+          ...Filters.createTime,
+          data: {
+            ...JSON.parse(JSON.stringify(Filters.createTime.data)),
+          },
+        },
+        {
+          ...Filters.closeTime,
+          data: {
+            ...JSON.parse(JSON.stringify(Filters.closeTime.data)),
+          },
+        },
+
+      ]}
+      customFilter={true}
+    ></IssueGrid>
   );
 }
 
@@ -66,7 +110,7 @@ const AllIssues = () => {
       <Container maxWidth="xxl" sx={{ mt: 4, mb: 4 }}>
         <Accordion defaultExpanded={true}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            All Issues
+            All Issues(No filter, show list of last one year)
           </AccordionSummary>
           <AccordionDetails>
             <Box sx={{ width: "100%" }}>

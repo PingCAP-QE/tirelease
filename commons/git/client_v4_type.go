@@ -70,6 +70,7 @@ type PullRequestFieldWithoutTimelineItems struct {
 	Number      githubv4.Int
 	State       githubv4.PullRequestState
 	Title       githubv4.String
+	Body        githubv4.String
 	Repository  RepositoryField
 	Url         githubv4.String
 	BaseRefName githubv4.String
@@ -124,8 +125,8 @@ type PullRequestTimelineItems struct {
 				}
 			} `graphql:"... on CrossReferencedEvent"`
 			IssueComment struct {
-				Author UserField
-				Body   githubv4.String
+				// Author UserField
+				Body githubv4.String
 			} `graphql:"... on IssueComment"`
 		}
 	}

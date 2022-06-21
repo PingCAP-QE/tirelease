@@ -19,7 +19,7 @@ export default function CIData() {
     const [timestamp, setTimestamp] = useState(addDays(new Date(), -3));
     const [table, setTable] = useState(null);
     const refreshTable = () => {
-        fetch("http://172.16.5.15:30792/report/unstable?job_name=" + jobName + "&timestamp=" + Math.round(timestamp.getTime()/1000))
+        fetch("http://172.16.5.15:30792/report/unstable?timestamp=" + Math.round(timestamp.getTime()/1000))
         .then(response => response.json())
         .then(data => {
             setTable(data);

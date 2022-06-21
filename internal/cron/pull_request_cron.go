@@ -16,9 +16,11 @@ func PullRequestCron() {
 	}
 	params := &service.RefreshPullRequestParams{
 		Repos:       repos,
-		BeforeHours: -360,
+		BeforeHours: -2,
 		Batch:       20,
-		Total:       3000,
+		Total:       500,
 	}
-	cron.Create("* */1 * * * *", func() { service.CronRefreshPullRequestV4(params) })
+	cron.Create("0 0 */1 * * ?", func() { service.CronRefreshPullRequestV4(params) })
+
+	// cron.Create("0 0 */2 * * ?", func() { service.CronMergeRetryPullRequestV3() })
 }

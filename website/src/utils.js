@@ -37,14 +37,23 @@ function getIssueSeverity(issue) {
 }
 
 export function flatten(info) {
-  let issue = info.Issue;
+  let issue = info.issue;
   let { type, issue: issue2 } = getIssueType(issue);
   let { severity, issue: issue3 } = getIssueSeverity(issue2);
 
-  const issueAffects = info.IssueAffects;
-  const relations = info.IssuePrRelations;
-  const prs = info.PullRequests;
+  const issueAffects = info.issue_affects;
+  const relations = info.issue_pr_relations;
+  const prs = info.pull_requests;
   return {
     ...issue,
   };
+}
+
+export function nextHour() {
+  const dt = new Date();
+  dt.setHours(dt.getHours() + 1);
+  dt.setMinutes(0);
+  dt.setSeconds(0);
+  dt.setMilliseconds(0);
+  return dt;
 }

@@ -12,21 +12,12 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-// func CreatePullRequest(pullRequest *entity.PullRequest) error {
-// 	// 加工
-// 	serializePullRequest(pullRequest)
-
-// 	// 存储
-// 	if err := database.DBConn.DB.Clauses(clause.OnConflict{DoNothing: true}).Create(&pullRequest).Error; err != nil {
-// 		return errors.Wrap(err, fmt.Sprintf("create pull request: %+v failed", pullRequest))
-// 	}
-// 	return nil
-// }
-
 func SelectPullRequest(option *entity.PullRequestOption) (*[]entity.PullRequest, error) {
+	sql := "select * from pull_request where 1=1" + PullRequestWhere(option) + PullRequestOrderBy(option) + PullRequestLimit(option)
+
 	// 查询
 	var prs []entity.PullRequest
-	if err := database.DBConn.DB.Where(option).Order("updated_at desc").Find(&prs).Error; err != nil {
+	if err := database.DBConn.RawWrapper(sql, option).Find(&prs).Error; err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("find pull request: %+v failed", option))
 	}
 
@@ -54,13 +45,6 @@ func SelectPullRequestUnique(option *entity.PullRequestOption) (*entity.PullRequ
 	return &((*prs)[0]), nil
 }
 
-// func DeletePullRequest(pullRequest *entity.PullRequest) error {
-// 	if err := database.DBConn.DB.Delete(pullRequest).Error; err != nil {
-// 		return errors.Wrap(err, fmt.Sprintf("delete pull request: %+v failed", pullRequest))
-// 	}
-// 	return nil
-// }
-
 func CreateOrUpdatePullRequest(pullRequest *entity.PullRequest) error {
 	// 加工
 	serializePullRequest(pullRequest)
@@ -73,6 +57,24 @@ func CreateOrUpdatePullRequest(pullRequest *entity.PullRequest) error {
 	}
 	return nil
 }
+
+// func CreatePullRequest(pullRequest *entity.PullRequest) error {
+// 	// 加工
+// 	serializePullRequest(pullRequest)
+
+// 	// 存储
+// 	if err := database.DBConn.DB.Clauses(clause.OnConflict{DoNothing: true}).Create(&pullRequest).Error; err != nil {
+// 		return errors.Wrap(err, fmt.Sprintf("create pull request: %+v failed", pullRequest))
+// 	}
+// 	return nil
+// }
+
+// func DeletePullRequest(pullRequest *entity.PullRequest) error {
+// 	if err := database.DBConn.DB.Delete(pullRequest).Error; err != nil {
+// 		return errors.Wrap(err, fmt.Sprintf("delete pull request: %+v failed", pullRequest))
+// 	}
+// 	return nil
+// }
 
 // 序列化和反序列化
 func serializePullRequest(pullRequest *entity.PullRequest) {
@@ -106,4 +108,74 @@ func unSerializePullRequest(pullRequest *entity.PullRequest) {
 		json.Unmarshal([]byte(pullRequest.RequestedReviewersString), &requestedReviewers)
 		pullRequest.RequestedReviewers = &requestedReviewers
 	}
+}
+
+func PullRequestWhere(option *entity.PullRequestOption) string {
+	sql := ""
+
+	if option.ID != 0 {
+		sql += " and pull_request.id = @ID"
+	}
+	if option.PullRequestID != "" {
+		sql += " and pull_request.pull_request_id = @PullRequestID"
+	}
+	if option.Number != 0 {
+		sql += " and pull_request.number = @Number"
+	}
+	if option.State != "" {
+		sql += " and pull_request.state = @State"
+	}
+	if option.Owner != "" {
+		sql += " and pull_request.owner = @Owner"
+	}
+	if option.Repo != "" {
+		sql += " and pull_request.repo = @Repo"
+	}
+	if option.BaseBranch != "" {
+		sql += " and pull_request.base_branch = @BaseBranch"
+	}
+	if option.SourcePullRequestID != "" {
+		sql += " and pull_request.source_pull_request_id = @SourcePullRequestID"
+	}
+	if option.Merged != nil {
+		sql += " and pull_request.merged = @Merged"
+	}
+	if option.MergeableState != nil {
+		sql += " and pull_request.mergeable_state = @MergeableState"
+	}
+	if option.CherryPickApproved != nil {
+		sql += " and pull_request.cherry_pick_approved = @CherryPickApproved"
+	}
+	if option.AlreadyReviewed != nil {
+		sql += " and pull_request.already_reviewed = @AlreadyReviewed"
+	}
+	if option.PullRequestIDs != nil && len(option.PullRequestIDs) > 0 {
+		sql += " and pull_request.pull_request_id in @PullRequestIDs"
+	}
+
+	return sql
+}
+
+func PullRequestOrderBy(option *entity.PullRequestOption) string {
+	sql := ""
+
+	if option.OrderBy != "" {
+		sql += " order by " + option.OrderBy
+	}
+	if option.Order != "" {
+		sql += " " + option.Order
+	}
+
+	return sql
+}
+
+func PullRequestLimit(option *entity.PullRequestOption) string {
+	sql := ""
+
+	if option.Page != 0 && option.PerPage != 0 {
+		option.ListOption.CalcOffset()
+		sql += " limit @Offset,@PerPage"
+	}
+
+	return sql
 }

@@ -1,9 +1,12 @@
 package service
 
 import (
+	"strings"
 	"testing"
+	"time"
 
 	"tirelease/commons/git"
+	"tirelease/internal/entity"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -29,4 +32,21 @@ func TestLabel(t *testing.T) {
 
 	// Assert
 	assert.Equal(t, true, err == nil)
+}
+
+func TestStrings(t *testing.T) {
+	s := "release-5.4"
+	replace := strings.Replace(s, git.ReleaseBranchPrefix, "", -1)
+	assert.Equal(t, "release-5.4", s)
+	assert.Equal(t, "5.4", replace)
+}
+
+func TestTimeNil(t *testing.T) {
+	triageItem := &entity.TriageItem{}
+	isZero := triageItem.CreateTime.IsZero()
+	assert.Equal(t, true, isZero)
+
+	var time time.Time
+	isZero = time.IsZero()
+	assert.Equal(t, true, isZero)
 }

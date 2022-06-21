@@ -1,22 +1,28 @@
 package controller
 
 import (
+	"net/http"
+
 	"tirelease/internal/dto"
 	"tirelease/internal/entity"
 	"tirelease/internal/service"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 func CreateOrUpdateVersionTriage(c *gin.Context) {
 	// Params
-	versionTriage := &entity.VersionTriage{}
-	c.ShouldBind(versionTriage)
+	versionTriageModifyOption := entity.VersionTriageModifyOption{}
+	if err := c.ShouldBindWith(&versionTriageModifyOption, binding.JSON); err != nil {
+		c.Error(err)
+		return
+	}
 
 	// Action
-	versionTriageInfo, err := service.CreateOrUpdateVersionTriageInfo(versionTriage)
+	versionTriageInfo, err := service.CreateOrUpdateVersionTriageInfo(&versionTriageModifyOption.VersionTriage, versionTriageModifyOption.UpdatedVars...)
 	if nil != err {
-		c.JSON(500, err.Error())
+		c.Error(err)
 		return
 	}
 
@@ -28,20 +34,26 @@ func CreateOrUpdateVersionTriage(c *gin.Context) {
 	c.JSON(statusCode, gin.H{"status": "ok", "data": versionTriageInfo})
 }
 
-func SelectVersionTriageInfos(c *gin.Context) {
+func SelectVersionTriageInfo(c *gin.Context) {
 	// Params
-	versionTriageInfoQuery := &dto.VersionTriageInfoQuery{}
-	c.ShouldBind(versionTriageInfoQuery)
+	versionTriageInfoQuery := dto.VersionTriageInfoQuery{}
+	if err := c.ShouldBindUri(&versionTriageInfoQuery); err != nil {
+		c.Error(err)
+		return
+	}
+	if versionTriageInfoQuery.Version != "" {
+		versionTriageInfoQuery.VersionName = versionTriageInfoQuery.Version
+	}
 
 	// Action
-	versionTriageInfos, err := service.SelectVersionTriageInfo(versionTriageInfoQuery)
+	versionTriageInfos, response, err := service.SelectVersionTriageInfo(&versionTriageInfoQuery)
 	if nil != err {
-		c.JSON(500, err.Error())
+		c.Error(err)
 		return
 	}
 
 	// Response
-	c.JSON(200, gin.H{"data": versionTriageInfos})
+	c.JSON(http.StatusOK, gin.H{"data": versionTriageInfos, "response": response})
 }
 
 func SelectVersionTriageResult(c *gin.Context) {
@@ -61,5 +73,5 @@ func SelectVersionTriageResult(c *gin.Context) {
 		VersionTriageResultReleased:     entity.VersionTriageResultReleased,
 	}
 
-	c.JSON(200, gin.H{"data": enumResult})
+	c.JSON(http.StatusOK, gin.H{"data": enumResult})
 }

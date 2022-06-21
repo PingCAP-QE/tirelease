@@ -15,8 +15,8 @@ const MyRoutes = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<AllIssues />} />
-        <Route path="/home" element={<AllIssues />} />
+        <Route path="/" element={<VersionPage />} />
+        <Route path="/home" element={<VersionPage />} />
         <Route path="/home/all" element={<AllIssues />} />
         <Route path="/home/open" element={<RecentOpen />} />
         <Route path="/home/affection" element={<AffectTriage />} />
@@ -27,6 +27,7 @@ const MyRoutes = () => {
         <Route path="/home/tifc" element={<TiFC />} />
         <Route path="/home/version" element={<VersionPage />} />
         <Route path="/home/triage" element={<Release />} />
+        <Route path="/home/triage/:version" element={<Release />} />
       </Routes>
     </BrowserRouter>
   );

@@ -4,34 +4,62 @@ import { getAffection, renderAffection } from "./renderer/Affection";
 import { getPullRequest, renderPullRequest } from "./renderer/PullRequest";
 import { getLabelValue, renderLabel } from "./renderer/Label";
 import { getPickTriageValue, renderPickTriage } from "./renderer/PickTriage";
+import { Button, Dialog, Stack, Typography } from "@mui/material";
+import { useState } from "react";
+import { renderComment } from "./renderer/Comment";
+import { renderChanged } from "./renderer/ChangedItem";
+import { renderDateTime } from './renderer/Time'
+import { renderBlockRelease } from "./renderer/BlockRelease";
 
 const id = {
   field: "id",
   headerName: "Id",
   hide: true,
-  valueGetter: (params) => params.row.Issue.issue_id,
+  valueGetter: (params) => params.row.issue.issue_id,
 };
 
 const repo = {
   field: "repo",
   headerName: "Repo",
-  valueGetter: (params) => params.row.Issue.repo,
+  valueGetter: (params) => params.row.issue.repo,
 };
+
+
+const components = {
+  field: "components",
+  hide: true,
+  headerName: "Components",
+  valueGetter: (params) => params.row.issue.components,
+};
+
 
 const number = {
   field: "number",
   headerName: "Number",
-  valueGetter: (params) => params.row.Issue.number,
+  type: "string",
+  valueGetter: (params) => ( params.row.issue.number+"("+params.row.issue.html_url+")"),
   renderCell: (params) => (
-    <a href={params.row.Issue.html_url}>{params.row.Issue.number}</a>
+    <a
+      href={params.row.issue.html_url}
+      _target="blank"
+      rel="noopener noreferrer"
+      onClick={(e) => {
+        window.open(params.row.issue.html_url);
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+    >
+      {params.row.issue.number}
+    </a>
   ),
 };
+
 
 const title = {
   field: "title",
   headerName: "Title",
   width: 480,
-  valueGetter: (params) => params.row.Issue.title,
+  valueGetter: (params) => params.row.issue.title,
 };
 
 const type = {
@@ -65,15 +93,35 @@ const severity = {
 const state = {
   field: "state",
   headerName: "State",
-  valueGetter: (params) => params.row.Issue.state,
+  valueGetter: (params) => params.row.issue.state,
   renderCell: renderIssueState,
+};
+
+const createdTime = {
+  field: "create_time",
+  headerName: "Create Time",
+  hide: true,
+  valueGetter: (params) => params.row.issue.create_time,
+  renderCell: (params) => {
+    return renderDateTime(params.row.issue.create_time);
+  },
+};
+
+const closedTime = {
+  field: "close_time",
+  headerName: "Close Time",
+  hide: true,
+  valueGetter: (params) => params.row.issue.close_time,
+  renderCell: (params) => {
+    return renderDateTime(params.row.issue.close_time);
+  },
 };
 
 const assignee = {
   field: "assignee",
   headerName: "Assignee",
   valueGetter: (params) =>
-    params.row.Issue.assignee.map((assignee) => assignee.login).join(","),
+    params.row.issue.assignees.map((assignees) => assignees.login).join(","),
   renderCell: renderAssignee,
 };
 
@@ -96,6 +144,37 @@ const pr = {
   valueGetter: getPullRequest("master"),
   renderCell: renderPullRequest("master"),
 };
+
+const triageStatus = {
+  field: "triage_status",
+  headerName: "Triage Status",
+  valueGetter: (params) => params.row.version_triage_merge_status,
+};
+
+const releaseBlock = {
+  field: "release_block",
+  headerName: "Release Blocked",
+  valueGetter: (params) => params.row.version_triage.block_version_release,
+  renderCell: renderBlockRelease 
+};
+
+const comment = {
+  field: "comment",
+  headerName: "Comment",
+  width: 480,
+  valueGetter: (params) => params.row.version_triage.comment,
+  renderCell: renderComment,
+};
+
+const changed = {
+  field: "changed",
+  width: 240,
+  headerName: "Changed Item",
+  valueGetter: (params) => params.row.version_triage.changed_item,
+  renderCell: renderChanged,
+};
+
+
 
 function getAffectionOnVersion(version) {
   return {
@@ -126,21 +205,69 @@ function getPickOnVersion(version) {
   };
 }
 
+function getFixedInLowerVersion(version) {
+  return {
+    field: "fixed_version",
+    headerName: "Fixed Lower Version",
+    hide: true,
+    width: 160,
+    valueGetter:
+      (params) => {
+          let fixVersions = params.row.version_triages.filter(
+            (f) => f.version_name < version && f.merge_status == "finished");
+          return [...new Set(fixVersions.map((f) => f.version_name.split(".").slice(0,2).join(".")))].sort(
+              function compareFn(a, b) { 
+                return a < b ? 1 : -1;
+              }
+            ).join(", ")
+      }
+    ,
+    renderCell: 
+       (params) => {
+          let fixVersions = params.row.version_triages.filter(
+            (f) => f.version_name < version && f.merge_status == "finished");
+          return (
+            <>
+              {
+                [...new Set(fixVersions.map(
+                (f) => 
+                  (f.version_name.split(".").slice(0,2).join(".") ) 
+                ))].sort(
+                  function compareFn(a, b) { 
+                    return a < b ? 1 : -1;
+                  }
+                ).join(", ")
+              }
+            </> 
+        )
+      
+    }
+  }
+}
+
 const Columns = {
   id,
   repo,
+  components,
   number,
   title,
   state,
+  createdTime,
+  closedTime,
   type,
   labels,
   assignee,
   severity,
   pr,
+  triageStatus,
+  comment,
+  changed,
+  releaseBlock,
   getAffectionOnVersion,
   getPROnVersion,
   getPickOnVersion,
-  issueBasicInfo: [id, repo, number, title],
+  getFixedInLowerVersion,
+  issueBasicInfo: [id, repo, components, number, title, severity, labels, assignee],
 };
 
 export default Columns;

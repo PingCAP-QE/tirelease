@@ -15,7 +15,8 @@ func UpdatePrAndIssue(webhookPayload WebhookPayload) error {
 	if webhookPayload.Issue != nil {
 		issue, err := git.ClientV4.GetIssueByNumber(webhookPayload.Repository.Owner.Login, webhookPayload.Repository.Name, webhookPayload.Issue.Number)
 		// create issue affect
-		for _, minorVersion := range MinorVersionList {
+		for i := range MinorVersionList {
+			minorVersion := MinorVersionList[i]
 			issueAffect := entity.IssueAffect{
 				CreateTime:    time.Now(),
 				UpdateTime:    time.Now(),
@@ -47,12 +48,24 @@ func UpdatePrAndIssue(webhookPayload WebhookPayload) error {
 }
 
 func InitDB() error {
-	issues, err := git.ClientV4.GetIssuesByTimeRangeV4("pingcap", "tidb", []string{"type/bug"}, time.Now().Add(-96*time.Hour), time.Now(), 20, 500)
+	request := &git.RemoteIssueRangeRequest{
+		Owner:      "pingcap",
+		Name:       "tidb",
+		Labels:     []string{"type/bug"},
+		From:       time.Now().Add(-96 * time.Hour),
+		To:         time.Now(),
+		BatchLimit: 20,
+		TotalLimit: 500,
+		Order:      "DESC",
+	}
+	issues, err := git.ClientV4.GetIssuesByTimeRangeV4(request)
 	if err != nil {
 		return err
 	}
-	for _, issue := range issues {
-		for _, minorVersion := range MinorVersionList {
+	for i := range issues {
+		issue := issues[i]
+		for j := range MinorVersionList {
+			minorVersion := MinorVersionList[j]
 			issueAffect := entity.IssueAffect{
 				CreateTime:    time.Now(),
 				UpdateTime:    time.Now(),
@@ -71,7 +84,14 @@ func InitDB() error {
 			return err
 		}
 	}
-	prs, err := git.ClientV4.GetPullRequestsFromV4("pingcap", "tidb", time.Now().Add(-48*time.Hour), 20, 500)
+	request2 := &git.RemoteIssueRangeRequest{
+		Owner:      "pingcap",
+		Name:       "tidb",
+		From:       time.Now().Add(-48 * time.Hour),
+		BatchLimit: 20,
+		TotalLimit: 500,
+	}
+	prs, err := git.ClientV4.GetPullRequestsFromV4(request2)
 	if err != nil {
 		return err
 	}
@@ -86,16 +106,18 @@ func InitDB() error {
 
 func IssueFieldToIssue(issueFiled *git.IssueField) *entity.Issue {
 	labels := &[]github.Label{}
-	for _, labelNode := range issueFiled.Labels.Nodes {
+	for i := range issueFiled.Labels.Nodes {
+		node := issueFiled.Labels.Nodes[i]
 		label := github.Label{}
-		label.Name = github.String(string(labelNode.Name))
+		label.Name = github.String(string(node.Name))
 		*labels = append(*labels, label)
 	}
 
 	assignees := &[]github.User{}
-	for _, userNode := range issueFiled.Assignees.Nodes {
+	for i := range issueFiled.Assignees.Nodes {
+		node := issueFiled.Assignees.Nodes[i]
 		user := github.User{
-			Login: (*string)(&userNode.Login),
+			Login: (*string)(&node.Login),
 		}
 		*assignees = append(*assignees, user)
 	}
@@ -117,8 +139,8 @@ func IssueFieldToIssue(issueFiled *git.IssueField) *entity.Issue {
 		Title:   string(issueFiled.Title),
 		Repo:    strings.Join([]string{string(issueFiled.Repository.Owner.Login), string(issueFiled.Repository.Name)}, "/"),
 		// ClosedAt:              issueFiled.ClosedAt.Time,
-		CreatedAt:             issueFiled.CreatedAt.Time,
-		UpdatedAt:             issueFiled.UpdatedAt.Time,
+		CreateTime:            issueFiled.CreatedAt.Time,
+		UpdateTime:            issueFiled.UpdatedAt.Time,
 		Labels:                labels,
 		Assignees:             assignees,
 		ClosedByPullRequestID: closedByPrID,
@@ -131,15 +153,17 @@ func IssueFieldToIssue(issueFiled *git.IssueField) *entity.Issue {
 
 func PullRequestFieldToPullRequest(pullRequestField *git.PullRequestField) *entity.PullRequest {
 	labels := &[]github.Label{}
-	for _, labelNode := range pullRequestField.Labels.Nodes {
+	for i := range pullRequestField.Labels.Nodes {
+		node := pullRequestField.Labels.Nodes[i]
 		label := github.Label{}
-		label.Name = github.String(string(labelNode.Name))
+		label.Name = github.String(string(node.Name))
 		*labels = append(*labels, label)
 	}
 	assignees := &[]github.User{}
-	for _, userNode := range pullRequestField.Assignees.Nodes {
+	for i := range pullRequestField.Assignees.Nodes {
+		node := pullRequestField.Assignees.Nodes[i]
 		user := github.User{
-			Login: (*string)(&userNode.Login),
+			Login: (*string)(&node.Login),
 		}
 		*assignees = append(*assignees, user)
 	}
@@ -159,8 +183,8 @@ func PullRequestFieldToPullRequest(pullRequestField *git.PullRequestField) *enti
 		Repo:          strings.Join([]string{string(pullRequestField.Repository.Owner.Login), string(pullRequestField.Repository.Name)}, "/"),
 		BaseBranch:    string(pullRequestField.BaseRefName),
 		// MergedAt:            pullRequestField.MergedAt.Time,
-		CreatedAt:           pullRequestField.CreatedAt.Time,
-		UpdatedAt:           pullRequestField.UpdatedAt.Time,
+		CreateTime:          pullRequestField.CreatedAt.Time,
+		UpdateTime:          pullRequestField.UpdatedAt.Time,
 		Merged:              bool(pullRequestField.Merged),
 		Labels:              labels,
 		Assignees:           assignees,
