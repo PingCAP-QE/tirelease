@@ -178,6 +178,13 @@ const repo = {
   }
 };
 
+const componentMap = new Map();
+
+componentMap.set("tidb", ["br", "lightning", "dumpling", "sql-infra", "execution", "transaction", "planner", "diagnosis", "tidb"]);
+componentMap.set("tiflash", ["storage", "compute", "tiflash"]);
+componentMap.set("tiflow", ["dm", "cdc", "tiflow"]);
+
+
 const components = {
   name: "Components",
   data: {
@@ -189,16 +196,31 @@ const components = {
     }
     return "";
   },
-  render: ({ data, update }) => {
+  render: ({ data, update, filterState }) => {
+    let repo = filterState["Repo"].data.selected;
+
+    let menu = []
+    if (Array.from(componentMap.keys()).includes(repo)) {
+      menu = componentMap.get(repo)
+    } else if(!repo) {
+      componentMap.forEach((v) => { menu.push(...v) })
+    } 
+
     return (
-      <TextField
+      <Select
         fullWidth
-        label="Components"
-        placeholder="Component name contains..."
+        onChange={(e) => {
+          update({ ...data, components: e.target.value });
+        }}
         value={data.components}
-        onChange={(e) => update({ components: e.target.value })}
-      />
+      >
+        <MenuItem value={undefined}>-</MenuItem>
+        {menu.map((component) => {
+          return <MenuItem value={component}>{component}</MenuItem>;
+        })}
+      </Select>
     );
+
   },
   filter: (params, self) => {
     if (self.data.components == undefined) {
@@ -549,6 +571,7 @@ export function FilterDialog({ open, onClose, onUpdate, filters }) {
                           ...filterState,
                           [f.name]: { ...f, data },
                         }),
+                      filterState: filterState,
                     })}
                   </TableCell>
                 </TableRow>

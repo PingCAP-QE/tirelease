@@ -209,7 +209,6 @@ function getFixedInLowerVersion(version) {
   return {
     field: "fixed_version",
     headerName: "Fixed Lower Version",
-    hide: true,
     width: 160,
     valueGetter:
       (params) => {
