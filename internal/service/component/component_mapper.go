@@ -10,13 +10,18 @@ const (
 	REPO_TIFLOW   = "tiflow"
 	REPO_TIFLASH  = "tiflash"
 
-	COMPONENT_DM        = "area/dm"
-	COMPONENT_CDC       = "area/ticdc"
-	COMPONENT_BR        = "component/br"
-	COMPONENT_LIGHTNING = "component/lightning"
-	COMPONENT_DUMPLING  = "component/dumpling"
-	COMPONENT_STORAGE   = "component/storage"
-	COMPONENT_COMPUTE   = "component/compute"
+	COMPONENT_DM          = "area/dm"
+	COMPONENT_CDC         = "area/ticdc"
+	COMPONENT_BR          = "component/br"
+	COMPONENT_LIGHTNING   = "component/lightning"
+	COMPONENT_DUMPLING    = "component/dumpling"
+	COMPONENT_STORAGE     = "component/storage"
+	COMPONENT_COMPUTE     = "component/compute"
+	COMPONENT_SQL_INFRA   = "sig/sql-infra"
+	COMPONENT_EXECUTION   = "sig/execution"
+	COMPONENT_TRANSACTION = "sig/transaction"
+	COMPONENT_PLANNER     = "sig/planner"
+	COMPONENT_DIAGNOSIS   = "sig/diagnosis"
 )
 
 type ComponentMeta struct {
@@ -28,13 +33,18 @@ type ComponentMeta struct {
 type Component string
 
 const (
-	TIFLOW_DM       = Component("dm")
-	TIFLOW_CDC      = Component("cdc")
-	TIDB_BR         = Component("br")
-	TIDB_LIGHTNING  = Component("lightning")
-	TIDB_DUMPLING   = Component("dumpling")
-	TIFLASH_STORAGE = Component("storage")
-	TIFLASH_COMPUTE = Component("compute")
+	TIFLOW_DM        = Component("dm")
+	TIFLOW_CDC       = Component("cdc")
+	TIDB_BR          = Component("br")
+	TIDB_LIGHTNING   = Component("lightning")
+	TIDB_DUMPLING    = Component("dumpling")
+	TIDB_SQL_INFRA   = Component("sql-infra")
+	TIDB_EXECUTION   = Component("execution")
+	TIDB_TRANSACTION = Component("transaction")
+	TIDB_PLANNER     = Component("planner")
+	TIDB_DIAGNOSIS   = Component("diagnosis")
+	TIFLASH_STORAGE  = Component("storage")
+	TIFLASH_COMPUTE  = Component("compute")
 )
 
 func GetComponentMappper() map[ComponentMeta]Component {
@@ -69,6 +79,26 @@ func initComponentMapper() {
 		Repo:  REPO_TIDB,
 		Label: COMPONENT_DUMPLING,
 	}] = TIDB_DUMPLING
+	componentMapper[ComponentMeta{Owner: OWNER_PINGCAP,
+		Repo:  REPO_TIDB,
+		Label: COMPONENT_SQL_INFRA,
+	}] = TIDB_SQL_INFRA
+	componentMapper[ComponentMeta{Owner: OWNER_PINGCAP,
+		Repo:  REPO_TIDB,
+		Label: COMPONENT_EXECUTION,
+	}] = TIDB_EXECUTION
+	componentMapper[ComponentMeta{Owner: OWNER_PINGCAP,
+		Repo:  REPO_TIDB,
+		Label: COMPONENT_TRANSACTION,
+	}] = TIDB_TRANSACTION
+	componentMapper[ComponentMeta{Owner: OWNER_PINGCAP,
+		Repo:  REPO_TIDB,
+		Label: COMPONENT_PLANNER,
+	}] = TIDB_PLANNER
+	componentMapper[ComponentMeta{Owner: OWNER_PINGCAP,
+		Repo:  REPO_TIDB,
+		Label: COMPONENT_DIAGNOSIS,
+	}] = TIDB_DIAGNOSIS
 	// tiflash components
 	componentMapper[ComponentMeta{
 		Owner: OWNER_PINGCAP,
