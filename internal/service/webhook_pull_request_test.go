@@ -152,3 +152,17 @@ func TestAutoRefreshPrApprovedLabel(t *testing.T) {
 	pr, _, _ := git.Client.GetPullRequestByNumber("pingcap", "tiflash", 4970)
 	AutoRefreshPrApprovedLabel(pr)
 }
+
+func TestRefreshPrIssueRefByPrContent(t *testing.T) {
+	t.Skip()
+
+	// init
+	git.Connect(git.TestToken)
+	git.ConnectV4(git.TestToken)
+	database.Connect(generateConfig())
+
+	prV4, err := git.ClientV4.GetPullRequestByID(git.TestPullRequestNodeID4)
+	assert.Equal(t, nil, err)
+	refreshPrIssueRefByPrContent(prV4)
+
+}

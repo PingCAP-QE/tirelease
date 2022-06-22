@@ -115,33 +115,9 @@ func WebHookRefreshPullRequestRefIssue(pr *github.PullRequest) error {
 	if baseBranch == "" || !strings.HasPrefix(string(baseBranch), git.ReleaseBranchPrefix) {
 		return nil
 	}
-	issueNumbers, err := GetPullRequestRefIssuesByRegexFromV4(prV4)
-	if err != nil {
-		return err
-	}
 
-	// refresh cross-referenced issue
-	if len(issueNumbers) > 0 {
-		for _, issueNumber := range issueNumbers {
-			issueOption := &entity.IssueOption{
-				Number: issueNumber,
-			}
-			issues, err := repository.SelectIssue(issueOption)
-			if err != nil {
-				return err
-			}
-			if len(*issues) == 0 {
-				continue
-			}
+	doubleCheckRefreshIssuePrRef(prV4)
 
-			for _, issue := range *issues {
-				err := WebhookRefreshIssueV4ByIssueID(issue.IssueID)
-				if err != nil {
-					return err
-				}
-			}
-		}
-	}
 	return nil
 }
 
@@ -243,4 +219,91 @@ func checkTriageStatus(versions []entity.ReleaseVersion, issues []entity.Issue) 
 	}
 
 	return hasFrozen, allApproved, nil
+}
+
+// Double check to ensure the relationship between pullrequest and issues is built.
+func doubleCheckRefreshIssuePrRef(prV4 *git.PullRequestField) {
+	refreshPrIssueRefByPrContent(prV4)
+	refreshPrIssueRefByIssueNumber(prV4)
+}
+
+// Build the relation by parsing the exact issue number in the  body of pullrequest.
+func refreshPrIssueRefByPrContent(prV4 *git.PullRequestField) error {
+	repo := prV4.Repository.Name
+	owner := prV4.Repository.Owner.Login
+	prID := prV4.ID
+	content := prV4.Body
+
+	// Ensure that the pr is already restored.
+	pr, err := repository.SelectPullRequestUnique(
+		&entity.PullRequestOption{
+			PullRequestID: prID.(string),
+		},
+	)
+	if err != nil {
+		return err
+	}
+	if pr == nil {
+		return fmt.Errorf("pullrequest %s is not restored", prID)
+	}
+
+	issueNumbers, err := git.ParseIssueNumber(string(content), string(owner), string(repo))
+	if err != nil {
+		return err
+	}
+
+	for _, issueNumber := range issueNumbers {
+		issue, err := repository.SelectIssueUnique(
+			&entity.IssueOption{
+				Number: issueNumber.Number,
+				Owner:  issueNumber.Owner,
+				Repo:   issueNumber.Repo,
+			},
+		)
+		if err != nil || issue == nil {
+			continue
+		}
+
+		repository.CreateIssuePrRelation(
+			&entity.IssuePrRelation{
+				PullRequestID: prID.(string),
+				IssueID:       issue.IssueID,
+			},
+		)
+	}
+	return nil
+}
+
+// Build the relation by the blurred issue number in the body of pullrequest.
+func refreshPrIssueRefByIssueNumber(prV4 *git.PullRequestField) error {
+
+	issueNumbers, err := GetPullRequestRefIssuesByRegexFromV4(prV4)
+	if err != nil {
+		return err
+	}
+
+	// refresh cross-referenced issue
+	if len(issueNumbers) > 0 {
+		for _, issueNumber := range issueNumbers {
+			issueOption := &entity.IssueOption{
+				Number: issueNumber,
+			}
+			issues, err := repository.SelectIssue(issueOption)
+			if err != nil {
+				return err
+			}
+			if len(*issues) == 0 {
+				continue
+			}
+
+			for _, issue := range *issues {
+				err := WebhookRefreshIssueV4ByIssueID(issue.IssueID)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
+
 }
