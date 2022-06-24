@@ -161,7 +161,7 @@ func TestRefreshPrIssueRefByPrContent(t *testing.T) {
 	git.ConnectV4(git.TestToken)
 	database.Connect(generateConfig())
 
-	prV4, err := git.ClientV4.GetPullRequestByID(git.TestPullRequestNodeID4)
+	prV4, err := git.ClientV4.GetPullRequestByID(git.TestPullRequestNodeID3)
 	assert.Equal(t, nil, err)
 	refreshPrIssueRefByPrContent(prV4)
 

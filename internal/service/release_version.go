@@ -77,6 +77,16 @@ func SelectReleaseVersionMaintained() (*[]string, error) {
 	if nil != err {
 		return nil, err
 	}
+
+	option = &entity.ReleaseVersionOption{
+		Status: entity.ReleaseVersionStatusFrozen,
+	}
+	frozenVersions, err := repository.SelectReleaseVersion(option)
+	if nil != err {
+		return nil, err
+	}
+	*versions = append(*versions, *frozenVersions...)
+
 	set := mapset.NewSet()
 	for _, version := range *versions {
 		set.Add(ComposeVersionMinorName(&version))

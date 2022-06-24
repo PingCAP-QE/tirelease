@@ -145,3 +145,11 @@ func TestExportHistoryVersionTriageWithDatabase(t *testing.T) {
 	err := ExportHistoryVersionTriageWithDatabase(option)
 	assert.Equal(t, true, err == nil)
 }
+
+func TestInheritVersionTriage(t *testing.T) {
+	t.Skip()
+
+	database.Connect(generateConfig())
+
+	InheritVersionTriage("5.4.2", "5.4.3")
+}
