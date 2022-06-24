@@ -235,15 +235,27 @@ func InheritVersionTriage(fromVersion string, toVersion string) error {
 		return nil
 	}
 
+	triagePRsMap, err := getTriageAndPRsMap(*versionTriages, fromVersion)
+	if err != nil {
+		return err
+	}
+
 	// Migrate
 	for i := range *versionTriages {
 		versionTriage := (*versionTriages)[i]
+		relatedPrs := triagePRsMap[versionTriage]
+		mergeStatus := ComposeVersionTriageMergeStatus(relatedPrs)
+
 		switch versionTriage.TriageResult {
 		case entity.VersionTriageResultAccept:
-			versionTriage.TriageResult = entity.VersionTriageResultReleased
-		case entity.VersionTriageResultUnKnown:
+			if mergeStatus == entity.VersionTriageMergeStatusMerged {
+				versionTriage.TriageResult = entity.VersionTriageResultReleased
+			} else {
+				versionTriage.VersionName = toVersion
+			}
+		case entity.VersionTriageResultUnKnown, entity.VersionTriageResultLater:
 			versionTriage.VersionName = toVersion
-		case entity.VersionTriageResultLater, entity.VersionTriageResultAcceptFrozen:
+		case entity.VersionTriageResultAcceptFrozen:
 			versionTriage.VersionName = toVersion
 			versionTriage.TriageResult = entity.VersionTriageResultAccept
 		}
