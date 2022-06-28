@@ -187,6 +187,7 @@ func checkTriageStatus(versions []entity.ReleaseVersion, issues []entity.Issue) 
 	}
 	hasFrozen := false
 	allApproved := true
+	isTriaged := false
 
 	for _, version := range versions {
 		for _, issue := range issues {
@@ -202,20 +203,23 @@ func checkTriageStatus(versions []entity.ReleaseVersion, issues []entity.Issue) 
 
 			// If there is no triage history
 			if len(*triages) == 0 {
-				allApproved = false
-				break
+				continue
 			} else if len(*triages) > 1 {
 				return false, false, fmt.Errorf("value exception: There are multiple triage infos for version %s, issue %s", version.Name, issue.IssueID)
 			}
 
+			isTriaged = true
 			triage := (*triages)[0]
 			if triage.TriageResult == entity.VersionTriageResultAcceptFrozen {
 				hasFrozen = true
 			}
-			if triage.TriageResult != entity.VersionTriageResultAccept {
+			if triage.TriageResult != entity.VersionTriageResultAccept && triage.TriageResult != entity.VersionTriageResultReleased {
 				allApproved = false
 			}
 		}
+	}
+	if !isTriaged {
+		allApproved = false
 	}
 
 	return hasFrozen, allApproved, nil
