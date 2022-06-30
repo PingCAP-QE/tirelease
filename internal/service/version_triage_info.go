@@ -256,8 +256,12 @@ func InheritVersionTriage(fromVersion string, toVersion string) error {
 		case entity.VersionTriageResultUnKnown, entity.VersionTriageResultLater:
 			versionTriage.VersionName = toVersion
 		case entity.VersionTriageResultAcceptFrozen:
-			versionTriage.VersionName = toVersion
-			versionTriage.TriageResult = entity.VersionTriageResultAccept
+			if mergeStatus == entity.VersionTriageMergeStatusMerged {
+				versionTriage.TriageResult = entity.VersionTriageResultReleased
+			} else {
+				versionTriage.VersionName = toVersion
+				versionTriage.TriageResult = entity.VersionTriageResultAccept
+			}
 		}
 		if err := repository.CreateOrUpdateVersionTriage(&versionTriage); err != nil {
 			return err
