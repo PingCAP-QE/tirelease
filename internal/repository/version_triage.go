@@ -66,9 +66,8 @@ func CreateOrUpdateVersionTriage(versionTriage *entity.VersionTriage, updatedVar
 	if versionTriage.CreateTime.IsZero() {
 		versionTriage.CreateTime = time.Now()
 	}
-	if versionTriage.UpdateTime.IsZero() {
-		versionTriage.UpdateTime = time.Now()
-	}
+	versionTriage.UpdateTime = time.Now()
+
 	if err := database.DBConn.DB.Clauses(clause.OnConflict{
 		DoUpdates: clause.AssignmentColumns(composeUpdatedVars(updatedVars...)),
 	}).Create(&versionTriage).Error; err != nil {
@@ -128,7 +127,7 @@ func VersionTriageLimit(option *entity.VersionTriageOption) string {
 
 func composeUpdatedVars(updatedVars ...entity.VersionTriageUpdatedVar) []string {
 	if len(updatedVars) == 0 {
-		return []string{"update_time", "triage_owner", "triage_result", "block_version_release", "due_time", "comment"}
+		return []string{"update_time", "version_name", "issue_id", "triage_owner", "triage_result", "block_version_release", "due_time", "comment"}
 	}
 
 	vars := []string{"update_time"}
