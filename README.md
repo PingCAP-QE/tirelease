@@ -1,4 +1,4 @@
-# TiRelease
+test ..# TiRelease
 [![Language](https://img.shields.io/badge/Language-Go-blue.svg)](https://golang.org/)
 
 This repository is a release platform for PingCAP, Welcome bros!
