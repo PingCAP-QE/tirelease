@@ -3,61 +3,45 @@ import Container from '@mui/material/Container';
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-// import Layout from './layout/Layout';
-// import {fetchGithubSSOAuth} from "./request/Auth";
-// import {Octokit} from "@octokit/core";
-import { useNavigate, useSearchParams } from "react-router-dom";
-// import storage from "./request/storageUtils";
+import Layout from '../../layout/Layout';
+import { useSearchParams } from "react-router-dom";
+import { url } from '../../utils';
+import { GIT_CLIENT_ID, GIT_CLIENT_SECRET } from '../../config';
+import storage from './LocalStorage';
 
-
-// async function FetchUserInfo(token) {
-//     const octokit = new Octokit({
-//         auth: token
-//     })
-
-//     await octokit.request('GET /user', {}).then(res => {
-//         let data = res.data;
-//         const loginname = data.login;
-//         storage.saveUser(loginname);
-//         window.location.href="/";
-//     })
-
-// }
-
-// function FetchUserToken(codeString) {
-//     fetchGithubSSOAuth(codeString).then((res) => {
-//         if (res.data.hasOwnProperty("access_token")) {
-//             FetchUserInfo(res.data.access_token)
-//         }
-
-
-//     });
-
-// }
+async function fetchUser({ code }) {
+    console.log(
+        "fetchUser",
+        url(`user?git_code=${code}&git_client_id=${GIT_CLIENT_ID}&git_client_secret=${GIT_CLIENT_SECRET}`)
+    );
+    return fetch(url(`user?git_code=${code}&git_client_id=${GIT_CLIENT_ID}&git_client_secret=${GIT_CLIENT_SECRET}`))
+        .then(async (res) => {
+            const data = await res.json();
+            storage.saveUser(data.data)
+            window.location.href="/home/all"
+        })
+        .catch((e) => {
+            console.log(e);
+        });
+}
 
 const LoginPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const code = searchParams.get("code");
     console.log("code1:", code);
-    // FetchUserToken(code1);
-
-
-    // handleChangeUser(loginName);
-
+    fetchUser({code});
 
     return (
         <>
-            {/* <Layout> */}
-                <Container maxWidth="xxl" sx={{mt: 4, mb: 4}}>
-                    {/*<Paper sx={{p: 2, display: 'flex', flexDirection: 'column'}}>*/}
-                    {/*</Paper>*/}
-                    <Accordion defaultExpanded={true}>
-                        <AccordionSummary expandIcon={<ExpandMoreIcon/>}>
-                            <td><font face="Comic Sans MS"> Log In Loading</font></td>
-                        </AccordionSummary>
-                    </Accordion>
-                </Container>
-            {/* </Layout> */}
+            <Layout>
+            <Container maxWidth="xxl" sx={{ mt: 4, mb: 4 }}>
+                <Accordion defaultExpanded={true}>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                        <td> Loading </td>
+                    </AccordionSummary>
+                </Accordion>
+            </Container>
+            </Layout>
         </>
     )
 };
