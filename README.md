@@ -18,6 +18,8 @@ This repository is a release platform for PingCAP, Welcome bros!
 git clone https://github.com/VelocityLight/tirelease.git
 cd tirelease/
 # create a config.yaml in root path (detail like /tirelease/config_example.yaml)
+# modify config.yaml using valid value
+# modify GIT_CLIENT_ID and GIT_CLIENT_SECRET in  website/src/config.js using valid value
 make run
 ```
 After waiting a few seconds, application is available and can be visited in the browser:[localhost:8080](http://localhost:8080/)
