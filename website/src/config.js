@@ -14,3 +14,6 @@ console.log(process.env);
 export default process.env.NODE_ENV === "development"
   ? dev_config
   : prod_config;
+
+export const GIT_CLIENT_ID = "(GIT_CLIENT_ID)";
+export const GIT_CLIENT_SECRET = "(GIT_CLIENT_SECRET)";

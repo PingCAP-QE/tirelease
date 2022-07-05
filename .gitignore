@@ -18,6 +18,7 @@ bin/
 
 # Self configuration files
 config.yaml
+website/src/config.js
 
 # System temporary file, like cache file
 .DS_Store

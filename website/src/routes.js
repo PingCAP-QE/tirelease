@@ -10,6 +10,7 @@ import VersionPage from "./pages/version";
 import AffectTriage from "./pages/affects";
 import PickTriage from "./pages/close";
 import AllIssues from "./pages/all";
+import Login from "./components/common/Login";
 
 const MyRoutes = () => {
   return (
@@ -28,6 +29,7 @@ const MyRoutes = () => {
         <Route path="/home/version" element={<VersionPage />} />
         <Route path="/home/triage" element={<Release />} />
         <Route path="/home/triage/:version" element={<Release />} />
+        <Route path="/home/login" element={<Login />} />
       </Routes>
     </BrowserRouter>
   );

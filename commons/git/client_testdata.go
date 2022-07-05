@@ -19,3 +19,7 @@ var TestIssueNodeID2 string = "I_kwDOGf5ce85E2TaX"
 var TestPullRequestNodeID2 string = "PR_kwDOGf5ce84z7gtv"
 
 var TestPullRequestNodeID3 string = "MDExOlB1bGxSZXF1ZXN0MTQyOTE5MTM1"
+
+var ClientID string = "(Client ID)"
+var ClientSecret string = "(Client Secret)"
+var Code string = "(user code)"

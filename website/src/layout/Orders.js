@@ -12,6 +12,8 @@ import AdUnitsIcon from "@mui/icons-material/AdUnits";
 import ImportContactsIcon from '@mui/icons-material/ImportContacts';
 import TaskIcon from '@mui/icons-material/Task';
 import ViewHeadlineIcon from '@mui/icons-material/ViewHeadline';
+import HelpIcon from '@mui/icons-material/Help';
+import LoginListItem from "./LoginListItem";
 
 export const mainListItems = (
   <div>
@@ -78,5 +80,18 @@ export const fourthListItems = (
     </ListItem>
   </div>
 );
+
+export const otherListItems = (
+  <div>
+    <ListItem button component="a" href="https://pingcap.feishu.cn/wiki/wikcnlsQYURNPO655xZZQwLIgKg" target='_blank'>
+      <ListItemIcon>
+        <HelpIcon />
+      </ListItemIcon>
+      <ListItemText primary="Docs" />
+    </ListItem>
+    <LoginListItem/>
+  </div>
+);
+
 
 // Icons From：https://mui.com/components/material-icons/?query=project

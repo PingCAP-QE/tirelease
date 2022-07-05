@@ -6,7 +6,7 @@ import List from '@mui/material/List';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import { mainListItems, secondaryListItems, thirdListItems, fourthListItems } from './Orders';
+import { mainListItems, secondaryListItems, thirdListItems, fourthListItems, otherListItems } from './Orders';
 
 const drawerWidth = 240;
 
@@ -62,6 +62,8 @@ export const Sidebar = (props) => {
                 <List>{thirdListItems}</List>
                 <Divider />
                 <List>{fourthListItems}</List>
+                <Divider />
+                <List>{otherListItems}</List>
             </SidebarStyle>
         </>
     );
