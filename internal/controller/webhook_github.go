@@ -6,6 +6,7 @@ import (
 
 	"tirelease/commons/git"
 	"tirelease/internal/service"
+	gconsumer "tirelease/internal/service/git_event_consumer"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-github/v41/github"
@@ -70,6 +71,18 @@ func GithubWebhookHandler(c *gin.Context) {
 			if err != nil {
 				c.Error(err)
 				return
+			}
+		}
+		// notify all pullrequest consumers
+		// TODO: Changed to isolated notifier with other consumers.
+		prConsumers := gconsumer.GetPREventConsumers()
+		for _, prConsumer := range prConsumers {
+			if prConsumer.Validate(*event) {
+				err := prConsumer.Consume(*event)
+				if err != nil {
+					c.Error(err)
+					return
+				}
 			}
 		}
 
