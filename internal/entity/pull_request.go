@@ -37,6 +37,8 @@ type PullRequest struct {
 	LabelsString             string `json:"labels_string,omitempty"`
 	AssigneesString          string `json:"assignees_string,omitempty"`
 	RequestedReviewersString string `json:"requested_reviewers_string,omitempty"`
+	IsReleaseNoteConfirmed   bool   `json:"is_release_note_confirmed,omitempty"`
+	ReleaseNote              string `json:"releaseNote,omitempty"`
 
 	// OutPut-Serial
 	Labels             *[]github.Label `json:"labels,omitempty" gorm:"-"`

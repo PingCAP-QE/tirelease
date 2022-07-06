@@ -89,7 +89,7 @@ export const otherListItems = (
       </ListItemIcon>
       <ListItemText primary="Docs" />
     </ListItem>
-    <LoginListItem/>
+    {/* <LoginListItem/> */}
   </div>
 );
 

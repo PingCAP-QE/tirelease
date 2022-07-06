@@ -172,3 +172,40 @@ func isFullPrefix(prefix string) (bool, string, string, error) {
 func isShortPrefix(prefix string) bool {
 	return prefix == shortPrefix
 }
+
+var (
+	pingcapReleaseNoteRegex = "(?s)(?:Release note\\*\\*:\\s*(?:<!--[^<>]*-->\\s*)?```(?:release-note)?|```release-note)(?P<release_note>.+?)```"
+	releaseNoteGroupName    = "release_note"
+)
+
+type ReleaseNoteData struct {
+	IsReleaseNoteConfirmed bool
+	ReleaseNote            string
+}
+
+func ParseReleaseNote(content string) (ReleaseNoteData, error) {
+
+	compile, err := regexp.Compile(pingcapReleaseNoteRegex)
+	if err != nil {
+		return ReleaseNoteData{false, ""}, err
+	}
+
+	allMatches := compile.FindAllStringSubmatch(content, -1)
+	groupNames := compile.SubexpNames()
+	releaseNote := ""
+	hasReleaseNote := false
+
+	for _, matches := range allMatches {
+		for i, groupName := range groupNames {
+			switch groupName {
+			case releaseNoteGroupName:
+				releaseNote = strings.TrimSpace(matches[i])
+				hasReleaseNote = true
+			}
+		}
+
+	}
+
+	return ReleaseNoteData{hasReleaseNote, releaseNote}, nil
+
+}

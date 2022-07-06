@@ -29,11 +29,11 @@ export default function LoginListItem() {
         <ListItem button onClick={onLogin}>
             <ListItemIcon>
                 {
-                    hasLogged ? <Avatar src={loginUser.git_avatar_url} sx={{width: "20px", height: "20px"}}/> : <GitHubIcon />
+                    hasLogged && loginUser !== undefined ? <Avatar src={loginUser.git_avatar_url} sx={{ width: "20px", height: "20px" }} /> : <GitHubIcon />
                 }
             </ListItemIcon>
             <ListItemText primary={
-                hasLogged ? loginUser.git_login : 'Login'
+                hasLogged && loginUser !== undefined ? loginUser.git_login : 'Login'
             } />
         </ListItem>
     );
