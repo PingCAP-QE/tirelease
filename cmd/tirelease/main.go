@@ -20,8 +20,7 @@ func main() {
 	git.ConnectV4(configs.Config.Github.AccessToken)
 
 	// Start Cron (If Needed)
-	cron.IssueCron()
-	cron.PullRequestCron()
+	cron.InitCron()
 
 	// Start website && REST-API
 	router := api.Routers("website/build/")
