@@ -35,7 +35,8 @@ func GetCronTasks() []CronTask {
 		Task: entity.Task{
 			Type: entity.TASK_TYPE_REFRESH_EMPLOYEE,
 		},
-		CronSchedule: "0 0 */12 * * ?",
+		// CronSchedule: "0 0 */12 * * ?",
+		CronSchedule: "0 */1 * * * ?",
 	})
 
 	return cronTasks

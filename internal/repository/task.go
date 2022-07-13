@@ -7,8 +7,34 @@ import (
 	"tirelease/internal/entity"
 
 	"github.com/pkg/errors"
+	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
+
+func SelectAndUpdateFirstTask(selectOption, updateOption entity.TaskOption) (*entity.Task, error) {
+	result := &entity.Task{}
+	updateTime := time.Now()
+	updateOption.UpdateTime = &updateTime
+
+	err := database.DBConn.DB.Transaction(func(tx *gorm.DB) error {
+		tx = selectOption.Where(tx)
+
+		if err := tx.Model(&entity.Task{}).First(result).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Model(result).Clauses(clause.Returning{}).Updates(updateOption.UpdateMap()).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	return result, err
+}
 
 func CreateTaskIfNotExist(task entity.Task) error {
 	initedTask := initTask(task)
@@ -20,6 +46,22 @@ func CreateTaskIfNotExist(task entity.Task) error {
 		},
 	).Create(&initedTask).Error; err != nil {
 		return errors.Wrap(err, fmt.Sprintf("create task: %+v failed", initedTask))
+	}
+	return nil
+}
+
+func SelectFirstTask(option entity.TaskOption) (*entity.Task, error) {
+	result := &entity.Task{}
+	if err := database.DBConn.DB.Where(option).First(result).Error; err != nil {
+		return nil, errors.Wrap(err, fmt.Sprintf("find task: %+v failed", option))
+	}
+	return result, nil
+}
+
+func UpdateTask(task entity.Task) error {
+	task.UpdateTime = time.Now()
+	if err := database.DBConn.DB.Save(&task).Error; err != nil {
+		return errors.Wrap(err, fmt.Sprintf("update task: %+v failed", task))
 	}
 	return nil
 }

@@ -6,6 +6,7 @@ import (
 	"tirelease/commons/database"
 	"tirelease/commons/git"
 	"tirelease/internal/cron"
+	"tirelease/internal/task"
 )
 
 func main() {
@@ -21,6 +22,9 @@ func main() {
 
 	// Start Cron (If Needed)
 	cron.InitCron()
+
+	// Start Task Execution
+	go task.StartTaskExecution()
 
 	// Start website && REST-API
 	router := api.Routers("website/build/")
