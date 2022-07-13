@@ -1,6 +1,7 @@
 package task
 
 import (
+	"fmt"
 	"math/rand"
 	"os"
 	"time"
@@ -8,6 +9,7 @@ import (
 	"tirelease/internal/repository"
 )
 
+// Execute all the tasks in the task queue
 func StartTaskExecution() {
 	for {
 		randSeed := rand.Intn(600)
@@ -16,17 +18,27 @@ func StartTaskExecution() {
 		refreshEmployeeTask := NewRefreshEmployeeTask()
 		refreshEmployeeTask.Execute()
 
+		refreshIssueTask := NewRefreshIssueTask()
+		refreshIssueTask.Execute()
+
+		refreshPrTask := NewRefreshPrTask()
+		refreshPrTask.Execute()
 	}
 }
 
 type ITaskExecution interface {
 	Execute()
+	getTaskType() entity.TaskType
 	fetch() *entity.Task
 	init(task *entity.Task) error
 	process(task *entity.Task) error
 	finish(task *entity.Task, message string)
 }
 
+// TaskExecution template
+// Using template design pattern
+// The real task execution is implemented in the sub class
+//     which only need to implement the **process and getTaskType** method to do the real work.
 type TaskExecutionBase struct {
 	ITaskExecution
 }
@@ -50,6 +62,28 @@ func (execution TaskExecutionBase) Execute() {
 	}
 
 	execution.ITaskExecution.finish(task, "")
+}
+
+func (execution TaskExecutionBase) fetch() *entity.Task {
+	targetType := execution.ITaskExecution.getTaskType()
+	targetStatus := entity.TASK_STATUS_CREATED
+	selectOption := entity.TaskOption{
+		Type:   &targetType,
+		Status: &targetStatus,
+	}
+
+	executingStatus := entity.TASK_STATUS_EXECUTING
+	updateOption := entity.TaskOption{
+		Status: &executingStatus,
+	}
+
+	targetTask, err := repository.SelectAndUpdateFirstTask(selectOption, updateOption)
+	if err != nil {
+		fmt.Printf("SelectAndUpdateFirstTask error: %s", err.Error())
+		return nil
+	}
+
+	return targetTask
 }
 
 func (execution TaskExecutionBase) init(task *entity.Task) error {

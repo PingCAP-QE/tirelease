@@ -11,6 +11,8 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+// Select and update first task in one transaction.
+// Return the updated task and error.
 func SelectAndUpdateFirstTask(selectOption, updateOption entity.TaskOption) (*entity.Task, error) {
 	result := &entity.Task{}
 	updateTime := time.Now()

@@ -16,6 +16,8 @@ func TestCreateCronTask(t *testing.T) {
 	task := entity.Task{
 		Type: entity.TASK_TYPE_REFRESH_EMPLOYEE,
 	}
+
+	// Create the same cron task twice to ensure the cron task is created only once
 	CreateCronTask(task)
 
 	CreateCronTask(task)

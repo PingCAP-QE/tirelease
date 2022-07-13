@@ -7,38 +7,39 @@ import (
 )
 
 type Task struct {
-	ID          int64      `json:"id,omitempty"`
-	IsDeleted   bool       `json:"is_deleted,omitempty"`
-	Creator     string     `json:"creator,omitempty"`
-	Executor    string     `json:"executor,omitempty"`
-	Type        Type       `json:"type,omitempty"`
-	HookType    HookType   `json:"hook_type,omitempty"`
-	Status      Status     `json:"status,omitempty"`
-	CreateTime  time.Time  `json:"create_time,omitempty"`
-	UpdateTime  time.Time  `json:"update_time,omitempty"`
-	ExecuteTime *time.Time `json:"execute_time,omitempty"`
-	FinishTime  *time.Time `json:"finish_time,omitempty"`
-	Message     string     `json:"message,omitempty"`
-	UniqueMeta  string     `json:"unique_meta,omitempty"`
+	ID          int64        `json:"id,omitempty"`
+	IsDeleted   bool         `json:"is_deleted,omitempty"`
+	Creator     string       `json:"creator,omitempty"`
+	Executor    string       `json:"executor,omitempty"`
+	Type        TaskType     `json:"type,omitempty"`
+	HookType    TaskHookType `json:"hook_type,omitempty"`
+	Status      Status       `json:"status,omitempty"`
+	CreateTime  time.Time    `json:"create_time,omitempty"`
+	UpdateTime  time.Time    `json:"update_time,omitempty"`
+	ExecuteTime *time.Time   `json:"execute_time,omitempty"`
+	FinishTime  *time.Time   `json:"finish_time,omitempty"`
+	Message     string       `json:"message,omitempty"`
+	// UniqueMeta is used to ensure that only one task is created for a given meta data.
+	UniqueMeta string `json:"unique_meta,omitempty"`
 }
 
 func (Task) TableName() string {
 	return "task"
 }
 
-type HookType string
+type TaskHookType string
 
 const (
-	TASK_HOOK_TYPE_CRON    HookType = "cron"
-	TASK_HOOK_TYPE_TRIGGER HookType = "trigger"
+	TASK_HOOK_TYPE_CRON    TaskHookType = "cron"
+	TASK_HOOK_TYPE_TRIGGER TaskHookType = "trigger"
 )
 
-type Type string
+type TaskType string
 
 const (
-	TASK_TYPE_REFRESH_PR       = Type("REFRESH_PR")
-	TASK_TYPE_REFRESH_ISSUE    = Type("REFRESH_ISSUE")
-	TASK_TYPE_REFRESH_EMPLOYEE = Type("REFRESH_EMPLOYEE")
+	TASK_TYPE_REFRESH_PR       = TaskType("REFRESH_PR")
+	TASK_TYPE_REFRESH_ISSUE    = TaskType("REFRESH_ISSUE")
+	TASK_TYPE_REFRESH_EMPLOYEE = TaskType("REFRESH_EMPLOYEE")
 )
 
 type Status string
@@ -56,8 +57,8 @@ type TaskOption struct {
 	IsDeleted   *bool
 	Creator     *string
 	Executor    *string
-	Type        *Type
-	HookType    *HookType
+	Type        *TaskType
+	HookType    *TaskHookType
 	Status      *Status
 	CreateTime  *time.Time
 	UpdateTime  *time.Time

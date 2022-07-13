@@ -28,15 +28,14 @@ func GetCronTasks() []CronTask {
 		Task: entity.Task{
 			Type: entity.TASK_TYPE_REFRESH_ISSUE,
 		},
-		CronSchedule: "0 0 */3 * * ?",
+		CronSchedule: "0 0 */1 * * ?",
 	})
 
 	cronTasks = append(cronTasks, CronTask{
 		Task: entity.Task{
 			Type: entity.TASK_TYPE_REFRESH_EMPLOYEE,
 		},
-		// CronSchedule: "0 0 */12 * * ?",
-		CronSchedule: "0 */1 * * * ?",
+		CronSchedule: "0 0 */12 * * ?",
 	})
 
 	return cronTasks

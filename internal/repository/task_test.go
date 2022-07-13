@@ -29,6 +29,6 @@ func TestSelectAndUpdateFirst(t *testing.T) {
 		ExecuteTime: &nowTime,
 	}
 
-	task, _ := SelectAndUpdateFirst(selectOption, updateOption)
+	task, _ := SelectAndUpdateFirstTask(selectOption, updateOption)
 	fmt.Printf("task: %+v\n", task)
 }
