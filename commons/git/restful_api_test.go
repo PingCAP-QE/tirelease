@@ -14,7 +14,7 @@ func TestGetAccessTokenByClient(t *testing.T) {
 }
 
 func TestGetUserByToken(t *testing.T) {
-	// t.Skip()
+	t.Skip()
 
 	user, err := GetUserByToken(TestToken)
 	if err != nil {

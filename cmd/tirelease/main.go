@@ -6,6 +6,7 @@ import (
 	"tirelease/commons/database"
 	"tirelease/commons/git"
 	"tirelease/internal/cron"
+	"tirelease/internal/task"
 )
 
 func main() {
@@ -20,8 +21,10 @@ func main() {
 	git.ConnectV4(configs.Config.Github.AccessToken)
 
 	// Start Cron (If Needed)
-	cron.IssueCron()
-	cron.PullRequestCron()
+	cron.InitCron()
+
+	// Start Task Execution
+	go task.StartTaskExecution()
 
 	// Start website && REST-API
 	router := api.Routers("website/build/")
