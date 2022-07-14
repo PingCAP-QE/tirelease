@@ -11,5 +11,15 @@ mysql:
   charset: ***
   timezone: ***
 
+employeemysql:
+  username: ***
+  password: ***
+  host: ***
+  port: "***"
+  database: ***
+  charset: ***
+  timezone: ***
+  table: ***
+
 github:
   accesstoken: ***

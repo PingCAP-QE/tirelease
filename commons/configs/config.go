@@ -18,6 +18,17 @@ type ConfigYaml struct {
 		TimeZone string `default:"Asia%2FShanghai"`
 	}
 
+	EmployeeMysql struct {
+		UserName string `default:"wh-read"`
+		PassWord string `required:"true"`
+		Host     string `required:"true"`
+		Port     string `default:"3306"`
+		DataBase string `required:"true"`
+		CharSet  string `default:"utf8"`
+		TimeZone string `default:"Asia%2FShanghai"`
+		Table    string `default:"employee"`
+	}
+
 	Github struct {
 		AccessToken string `required:"true"`
 	}
