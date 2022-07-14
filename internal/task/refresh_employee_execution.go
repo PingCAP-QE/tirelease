@@ -1,8 +1,8 @@
 package task
 
 import (
-	"fmt"
 	"tirelease/internal/entity"
+	"tirelease/internal/repository"
 )
 
 type RefreshEmployeeTask struct {
@@ -14,10 +14,19 @@ func (refreshTask RefreshEmployeeTask) getTaskType() entity.TaskType {
 }
 
 func (refreshTask RefreshEmployeeTask) process(task *entity.Task) error {
-	// TODO Replace the logic using real refreshing of employee data.
-	fmt.Printf("RefreshEmployeeTask process %v \n", task)
+	hrEmployees, err := repository.SelectAllHrEmployee()
+	if err != nil {
+		return err
+	}
 
-	return nil
+	employees := make([]entity.Employee, 0)
+	for _, hrEmployee := range hrEmployees {
+		employees = append(employees, hrEmployee.Trans())
+	}
+
+	err = repository.BatchCreateOrUpdateEmployees(employees)
+
+	return err
 }
 
 func NewRefreshEmployeeTask() RefreshEmployeeTask {

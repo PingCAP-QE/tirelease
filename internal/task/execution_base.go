@@ -114,6 +114,7 @@ func (execution TaskExecutionBase) finish(task *entity.Task, message string) {
 
 	if message != "" {
 		task.Status = entity.TASK_STATUS_FAILED
+		task.Message = message
 		repository.UpdateTask(*task)
 		return
 	}
