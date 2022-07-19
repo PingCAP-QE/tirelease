@@ -248,7 +248,7 @@ func getIssues(issueIDs []string) ([]entity.Issue, error) {
 		issueOption := &entity.IssueOption{
 			IssueIDs: issueIDs,
 		}
-		issueAlls, err := repository.SelectIssue(issueOption)
+		issueAlls, err := SelectIssues(issueOption)
 		if nil != err {
 			return nil, err
 		}
