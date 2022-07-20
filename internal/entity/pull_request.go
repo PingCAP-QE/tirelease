@@ -111,7 +111,7 @@ func ComposePullRequestFromV3(pullRequest *github.PullRequest) *PullRequest {
 	}
 	mergeableState := strings.ToLower(*pullRequest.MergeableState)
 
-	return &PullRequest{
+	prEntity := &PullRequest{
 		PullRequestID: *pullRequest.NodeID,
 		Number:        *pullRequest.Number,
 		State:         strings.ToLower(*pullRequest.State),
@@ -136,6 +136,12 @@ func ComposePullRequestFromV3(pullRequest *github.PullRequest) *PullRequest {
 		RequestedReviewers: requestedReviewers,
 		Body:               *pullRequest.Body,
 	}
+
+	releaseNote, _ := parseReleaseNote(*prEntity)
+	prEntity.IsReleaseNoteConfirmed = releaseNote.IsReleaseNoteConfirmed
+	prEntity.ReleaseNote = releaseNote.ReleaseNote
+
+	return prEntity
 }
 
 // ComposePullRequestFromV4
@@ -207,6 +213,11 @@ func ComposePullRequestFromV4(pullRequestField *git.PullRequestField) *PullReque
 	if pullRequestField.MergedAt != nil {
 		pr.MergeTime = &pullRequestField.MergedAt.Time
 	}
+
+	releaseNote, _ := parseReleaseNote(*pr)
+	pr.IsReleaseNoteConfirmed = releaseNote.IsReleaseNoteConfirmed
+	pr.ReleaseNote = releaseNote.ReleaseNote
+
 	return pr
 }
 
@@ -215,6 +226,22 @@ func ComposePullRequestWithoutTimelineFromV4(withoutTimeline *git.PullRequestFie
 		PullRequestFieldWithoutTimelineItems: *withoutTimeline,
 	}
 	return ComposePullRequestFromV4(pullRequestField)
+}
+
+func parseReleaseNote(prEntity PullRequest) (git.ReleaseNoteData, error) {
+	releaseNote, err := git.ParseReleaseNote(prEntity.Body)
+
+	if err != nil || !releaseNote.IsReleaseNoteConfirmed {
+		labels := prEntity.Labels
+		for _, label := range *labels {
+			if *label.Name == git.NONE_RELEASE_NOTE_LABEL {
+				releaseNote.IsReleaseNoteConfirmed = true
+				releaseNote.ReleaseNote = "None"
+			}
+		}
+	}
+
+	return releaseNote, err
 }
 
 /**
