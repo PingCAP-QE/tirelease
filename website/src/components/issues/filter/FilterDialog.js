@@ -202,9 +202,9 @@ const components = {
     let menu = []
     if (Array.from(componentMap.keys()).includes(repo)) {
       menu = componentMap.get(repo)
-    } else if(!repo) {
+    } else if (!repo) {
       componentMap.forEach((v) => { menu.push(...v) })
-    } 
+    }
 
     return (
       <Select
@@ -543,10 +543,27 @@ const versionTriageStatus = {
   }
 };
 
+function array2queryString(array = []) {
+  return array
+    .map((item) => {
+      return stringify(item);
+    })
+    .filter((item) => item.length > 0)
+    .join("&");
+};
 
 export const Filters = { number, repo, title, affect, type, state, severity, createTime, closeTime, versionTriageStatus, triageResult, components };
 
 export function FilterDialog({ open, onClose, onUpdate, filters }) {
+  var wrapedOnUpdate = (filterState) => {
+    onUpdate(filterState);
+    var currentUrl = window.location.href
+    var queryString = "?" + array2queryString(Object.values(filterState));
+    var targetUrl = currentUrl.includes("?") ?
+      currentUrl.replace(/\?.*/, queryString) : currentUrl + queryString;
+    window.history.pushState(null, null, targetUrl);
+  }
+
   const [filterState, setFilterState] = React.useState(
     filters.reduce((map, flt) => {
       map[flt.name] = { ...flt, data: JSON.parse(JSON.stringify(flt.data)) };
@@ -585,7 +602,7 @@ export function FilterDialog({ open, onClose, onUpdate, filters }) {
           autoFocus
           variant="contained"
           onClick={() => {
-            onUpdate(filterState);
+            wrapedOnUpdate(filterState);
           }}
         >
           Search
