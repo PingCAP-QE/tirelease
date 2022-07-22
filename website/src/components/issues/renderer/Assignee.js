@@ -1,7 +1,10 @@
 import { Chip } from "@mui/material";
 
 export function renderAssignee(params) {
-  return params.row.issue.assignees.map((assignees) => (
-    <Chip label={assignees.login}></Chip>
+  var assignees = params.row.issue.assigned_employees.map((assignees) => 
+    assignees.name == undefined || assignees.name.length == 0? assignees.login : assignees.name);
+ 
+  return assignees.map((assignee) => (
+    <Chip label={assignee} />
   ));
 }

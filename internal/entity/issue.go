@@ -35,9 +35,12 @@ type Issue struct {
 	TypeLabel             string `json:"type_label,omitempty"`
 
 	// OutPut-Serial
-	Labels     *[]github.Label       `json:"labels,omitempty" gorm:"-"`
-	Assignees  *[]github.User        `json:"assignees,omitempty" gorm:"-"`
-	Components []component.Component `json:"components,omitempty" gorm:"-"`
+	Labels *[]github.Label `json:"labels,omitempty" gorm:"-"`
+	// **deprecated**: refactor after the service level Issue is implemented
+	Assignees *[]github.User `json:"assignees,omitempty" gorm:"-"`
+	// **deprecated**: refactor after the service level Issue is implemented
+	AssignedEmployees *[]Employee           `json:"assigned_employees,omitempty" gorm:"-"`
+	Components        []component.Component `json:"components,omitempty" gorm:"-"`
 }
 
 // List Option

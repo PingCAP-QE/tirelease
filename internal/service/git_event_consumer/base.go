@@ -19,5 +19,4 @@ func GetPREventConsumers() []PREventConsumer {
 
 func initPREventConsumerMap() {
 	pREventConsumer = make([]PREventConsumer, 0)
-	pREventConsumer = append(pREventConsumer, PrReleaseNoteConsumer{})
 }
