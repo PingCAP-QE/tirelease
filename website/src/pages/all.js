@@ -11,6 +11,7 @@ import { IssueGrid } from "../components/issues/IssueGrid";
 import Columns from "../components/issues/GridColumns";
 import { fetchVersion } from "../components/issues/fetcher/fetchVersion";
 import { Filters } from "../components/issues/filter/FilterDialog";
+import { useSearchParams } from "react-router-dom";
 
 function Table() {
   const versionQuery = useQuery(["version", "maintained"], fetchVersion);
@@ -105,6 +106,15 @@ function Table() {
 }
 
 const AllIssues = () => {
+  // Duplicate with VersionTriage plane.
+  // Because the "useSearchParams" must be used in component function.
+  const [searchParams, setSearchParams] = useSearchParams();
+  Object.values(Filters).map(filter => {
+    if (filter.id != undefined && searchParams.has(filter.id)) {
+      filter.set(searchParams, filter);
+    }
+  })
+
   return (
     <Layout>
       <Container maxWidth="xxl" sx={{ mt: 4, mb: 4 }}>

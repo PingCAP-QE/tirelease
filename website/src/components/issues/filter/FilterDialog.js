@@ -12,17 +12,22 @@ import DateTimePicker from "@mui/lab/DateTimePicker";
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import LocalizationProvider from "@mui/lab/LocalizationProvider";
 import { getVersionTriageValue } from "../renderer/PickTriage"
+import { useSearchParams } from "react-router-dom";
 
 export const stringify = (filter) =>
   (filter.stringify || ((filter) => filter))(filter);
 
 const number = {
+  id: "number",
   name: "Issue Number",
   data: {
     issueNumber: undefined,
   },
+  set: (searchParams, self) => {
+    self.data.issueNumber = searchParams.get(self.id);
+  },
   stringify: (self) => {
-    return self.data.issueNumber ? `number=${self.data.issueNumber}` : "";
+    return self.data.issueNumber ? `${self.id}=${self.data.issueNumber}` : "";
   },
   render: ({ data, update }) => {
     return (
@@ -40,14 +45,23 @@ const number = {
 };
 
 const state = {
+  id: "state",
   name: "State",
   data: {
     open: true,
     closed: true,
   },
+  set: (searchParams, self) => {
+    var values = searchParams.getAll(self.id)
+    Object.keys(self.data).forEach(key => {
+      if (!values.includes(`${key}`)) {
+        self.data[key] = false;
+      }
+    })
+  },
   stringify: (self) => {
     if (self.data.open ^ self.data.closed) {
-      return `state=${self.data.open ? "open" : "closed"}`;
+      return `${self.id}=${self.data.open ? "open" : "closed"}`;
     }
     return "";
   },
@@ -82,13 +96,17 @@ const state = {
 const issueTypes = ["bug", "enhancement", "featur-request"];
 
 const type = {
+  id: "type_label",
   name: "Type",
   data: {
     selected: undefined,
   },
+  set: (searchParams, self) => {
+    self.data.selected = searchParams.getAll(self.id);
+  },
   stringify: (self) => {
     if (self.data.selected !== undefined) {
-      return `type_label=type/${self.data.selected}`;
+      return `${self.id}=type/${self.data.selected}`;
     }
     return "";
   },
@@ -117,9 +135,13 @@ const type = {
 };
 
 const title = {
+  id: "title",
   name: "Title",
   data: {
     title: undefined,
+  },
+  set: (searchParams, self) => {
+    self.data.title = searchParams.get(self.id);
   },
   stringify: (self) => {
     // TODO: add title search implement
@@ -144,13 +166,17 @@ const title = {
 const repos = ["tidb", "tiflash", "tikv", "pd", "tiflow"];
 
 const repo = {
+  id: "repo",
   name: "Repo",
   data: {
     selected: undefined,
   },
+  set: (searchParams, self) => {
+    self.data.selected = searchParams.get(self.id);
+  },
   stringify: (self) => {
     if (self.data.selected !== undefined) {
-      return `repo=${self.data.selected}`;
+      return `${self.id}=${self.data.selected}`;
     }
     return "";
   },
@@ -186,13 +212,17 @@ componentMap.set("tiflow", ["dm", "cdc", "tiflow"]);
 
 
 const components = {
+  id: "components",
   name: "Components",
   data: {
     components: undefined,
   },
+  set: (searchParams, self) => {
+    self.data.components = searchParams.get(self.id);
+  },
   stringify: (self) => {
     if (self.data.components !== undefined) {
-      return `components=${self.data.components}`;
+      return `${self.id}=${self.data.components}`;
     }
     return "";
   },
@@ -233,6 +263,7 @@ const components = {
 const severityLabels = ["critical", "major", "moderate", "minor"];
 
 const severity = {
+  id: "severity_labels",
   name: "Severity",
   data: {
     critical: true,
@@ -240,6 +271,14 @@ const severity = {
     moderate: true,
     minor: true,
     // none: true,
+  },
+  set: (searchParams, self) => {
+    var values = searchParams.getAll(self.id);
+    Object.keys(self.data).forEach(key => {
+      if (!values.includes(`severity/${key}`)) {
+        self.data[key] = false;
+      }
+    })
   },
   stringify: (self) => {
     if (
@@ -254,7 +293,7 @@ const severity = {
     }
     return severityLabels
       .filter((label) => self.data[label])
-      .map((label) => `severity_labels=severity/${label}`)
+      .map((label) => `${self.id}=severity/${label}`)
       .join("&");
   },
   render: ({ data, update }) => {
@@ -300,11 +339,16 @@ const severity = {
 };
 
 const affect = {
+  id: "affect_version",
   name: "Affect",
   data: {
     versions: undefined,
     version: undefined,
     result: undefined,
+  },
+  set: (searchParams, self) => {
+    self.data.version = searchParams.get("affect_version")
+    self.data.result = searchParams.get("affect_result")
   },
   stringify: (self) => {
     if (self.data.version !== undefined && self.data.result !== undefined) {
@@ -361,12 +405,24 @@ const affect = {
 };
 
 const createTime = {
+  id: "created_at_stamp",
   name: "Create Time",
   data: {
-    createTime: null,
+    createTime: undefined,
+  },
+  set: (searchParams, self) => {
+    var timeStamp = searchParams.get(self.id) * 1000
+    var date = new Date(timeStamp)
+    self.data.createTime = date;
   },
   stringify: (self) => {
-    return self.data.createTime ? `created_at_stamp=${self.data.createTime.getTime() / 1000}` : "";
+    if (self.data.createTime == undefined) {
+      return ""
+    }
+    if (typeof (self.data.createTime) == "string") {
+      self.data.createTime = new Date(self.data.createTime)
+    }
+    return self.data.createTime ? `${self.id}=${self.data.createTime.getTime() / 1000}` : "";
   },
   render: ({ data, update }) => {
     return (
@@ -389,12 +445,22 @@ const createTime = {
 };
 
 const closeTime = {
+  id: "closed_at_stamp",
   name: "Close Time",
   data: {
-    closeTime: null,
+    closeTime: undefined,
+  },
+  set: (searchParams, self) => {
+    self.data.closeTime = new Date(searchParams.get(self.id) * 1000);
   },
   stringify: (self) => {
-    return self.data.closeTime ? `closed_at_stamp=${self.data.closeTime.getTime() / 1000}` : "";
+    if (self.data.closeTime == undefined) {
+      return ""
+    }
+    if (typeof (self.data.closeTime) == "string") {
+      self.data.closeTime = new Date(self.data.closeTime)
+    }
+    return self.data.closeTime ? `${self.id}=${self.data.closeTime.getTime() / 1000}` : "";
   },
   render: ({ data, update }) => {
     return (
@@ -420,13 +486,17 @@ const closeTime = {
 const triageResultLabel = ["approved", "later", "won't fix", "unknown", "approved(frozen)", "N/A"];
 
 const triageResult = {
+  id: "triage_result",
   name: "Triage Result",
   data: {
     selected: undefined,
   },
+  set: (searchParams, self) => {
+    self.data.selected = searchParams.get(self.id);
+  },
   stringify: (self) => {
     if (self.data.selected !== undefined) {
-      return `triage_result=${self.data.selected}`;
+      return `${self.id}=${self.data.selected}`;
     }
     return "";
   },
@@ -465,6 +535,7 @@ const triageResult = {
 const versionTriageStatusLabel = ["need pr", "need approve", "need review", "ci testing", "finished"];
 
 const versionTriageStatus = {
+  id: "version_triage_status",
   name: "Triage Status",
   data: {
     need_pr: true,
@@ -473,6 +544,14 @@ const versionTriageStatus = {
     ci_testing: true,
     finished: true,
     // none: true,
+  },
+  set: (searchParams, self) => {
+    var values = searchParams.getAll("version_triage_status")
+    Object.keys(self.data).forEach(key => {
+      if (!values.includes(`${key}`)) {
+        self.data[key] = false;
+      }
+    })
   },
   stringify: (self) => {
     if (
@@ -490,7 +569,7 @@ const versionTriageStatus = {
     return versionTriageStatusLabel
       .map((label) => label.replace(" ", "_"))
       .filter((label) => self.data[label])
-      .map((label) => `version_triage_status=${label}`)
+      .map((label) => `${self.id}=${label}`)
       .join("&");
   },
   render: ({ data, update }) => {
@@ -544,7 +623,10 @@ const versionTriageStatus = {
 };
 
 function array2queryString(array = []) {
-  return array
+  if (array.length == 0) {
+    return "";
+  }
+  return "?" + array
     .map((item) => {
       return stringify(item);
     })
@@ -558,7 +640,7 @@ export function FilterDialog({ open, onClose, onUpdate, filters }) {
   var wrapedOnUpdate = (filterState) => {
     onUpdate(filterState);
     var currentUrl = window.location.href
-    var queryString = "?" + array2queryString(Object.values(filterState));
+    var queryString = array2queryString(Object.values(filterState));
     var targetUrl = currentUrl.includes("?") ?
       currentUrl.replace(/\?.*/, queryString) : currentUrl + queryString;
     window.history.pushState(null, null, targetUrl);
