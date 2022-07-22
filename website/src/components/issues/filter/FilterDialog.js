@@ -102,7 +102,7 @@ const type = {
     selected: undefined,
   },
   set: (searchParams, self) => {
-    self.data.selected = searchParams.getAll(self.id);
+    self.data.selected = searchParams.get(self.id).replace("type/", "");
   },
   stringify: (self) => {
     if (self.data.selected !== undefined) {
