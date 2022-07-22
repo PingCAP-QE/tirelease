@@ -6,11 +6,20 @@ import ReleaseTable from "../components/release/ReleaseTable";
 import { Filters } from "../components/issues/filter/FilterDialog";
 import Columns from "../components/issues/GridColumns"
 import { useParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 
 const Release = () => {
   const params = useParams();
   const version = params.version === undefined ? "none" : params.version;
   const minorVersion = version == "none" ? "none" : version.split(".").slice(0, 2).join(".");
+  // Duplicate with AllIssues plane.
+  // Because the "useSearchParams" must be used in component function.
+  const [searchParams, setSearchParams] = useSearchParams();
+  Object.values(Filters).map(filter => {
+    if (filter.id != undefined && searchParams.has(filter.id)) {
+      filter.set(searchParams, filter);
+    }
+  })
 
   return (
     <Layout>

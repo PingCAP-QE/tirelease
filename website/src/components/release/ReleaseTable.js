@@ -122,7 +122,8 @@ const ReleaseTable = ({
           <VersionSelector
             versionProp={version}
             onChange={(v) => {
-              navigate(`/home/triage/${v}`, { replace: true });
+              var queryString = window.location.search
+              navigate(`/home/triage/${v}${queryString}`, { replace: true });
             }}
           />
           {customFilter && (
