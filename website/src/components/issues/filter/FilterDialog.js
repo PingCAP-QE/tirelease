@@ -93,7 +93,7 @@ const state = {
   }
 };
 
-const issueTypes = ["bug", "enhancement", "featur-request"];
+const issueTypes = ["bug", "enhancement", "feature", "feature-request"];
 
 const type = {
   id: "type_label",
