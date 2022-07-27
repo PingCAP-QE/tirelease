@@ -163,7 +163,7 @@ const title = {
   }
 };
 
-const repos = ["tidb", "tiflash", "tikv", "pd", "tiflow"];
+const repos = ["tidb", "tiflash", "tikv", "pd", "tiflow", "tidb-binlog", "tidb-tools"];
 
 const repo = {
   id: "repo",
